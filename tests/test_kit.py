@@ -72,7 +72,7 @@ C_EditMode = {
 }
 """
 
-ADDONS = ("!ForeverKit", "Bartender4", "SexyMap", "Questie", "RXPGuides",
+ADDONS = ("!ForeverKit", "Bartender4", "SexyMap", "Questie",
           "Leatrix_Plus", "EllesmereUIUnitFrames", "EllesmereUIRaidFrames", "ForeverThreat")
 
 
@@ -162,11 +162,9 @@ def test_layout_upgrade_reapplies_but_same_version_does_not():
 
 def test_seeding_keeps_other_settings():
     before = """SexyMap2DB = { ["Raba Canoosh"] = { clock = { font = "x" } } }
-      QuestieConfig = { profiles = { Default = { keep = true } } }
-      RXPSettings = { profiles = { ["Raba Canoosh - Realm"] = { framePositions = { RXPFrame = 1 } } } }"""
+      QuestieConfig = { profiles = { Default = { keep = true } } }"""
     e = login(before=before, surname=None, name="Raba Canoosh").eval
     assert e('QuestieConfig.profiles.Default.keep') is True
-    assert e('RXPSettings.profiles["Raba Canoosh - Realm"].framePositions.RXPFrame') == 1
 
 
 def test_personal_overrides_apply_without_touching_layout():
@@ -180,13 +178,6 @@ def test_old_kit_binds_reset_once_and_friends_never():
     e = login(before='ForeverKitChar = { version = 1, settings = "old" }').eval
     assert e("resets") == 1 and e("ForeverKitChar.defaultsRestored") is True
     assert login(name="Bob", surname=None).eval("resets") == 0
-
-
-def test_restedxp_target_box_moves_for_this_character():
-    e = login().eval
-    frame = 'RXPSettings.profiles["Raba Canoosh"].framePositions.activeTargetFrame[1]'
-    assert e(f"{frame}[1]") == "TOPLEFT" and e(f"{frame}[4]") == 30
-    assert e('RXPSettings.profileKeys["Raba Canoosh"]') == "Raba Canoosh"
 
 
 def test_party_waits_for_a_late_combat_to_end():

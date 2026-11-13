@@ -114,7 +114,7 @@ $retired = 'AtlasBIStooltips', 'AtlasLootClassic', 'AtlasLootClassic_Collections
     'AtlasLootClassic_PvP', 'Details', 'Details_Compare2', 'Details_DataStorage', 'Details_EncounterDetails',
     'Details_RaidCheck', 'Details_Streamer', 'Details_TinyThreat', 'Details_Vanguard', 'GatherMate2', 'GatherMate2_Data',
     'GatherMate2Storage_Dragonflight', 'GatherMate2Storage_Midnight', 'GatherMate2Storage_TheWarWithin',
-    'GuideLime_TUGs_Forever', 'Guidelime', 'Leatrix_Maps', 'Prat-3.0', 'Safeguard', 'WeaponSwingTimer',
+    'GuideLime_TUGs_Forever', 'Guidelime', 'Leatrix_Maps', 'Prat-3.0', 'RXPGuides', 'Safeguard', 'WeaponSwingTimer',
     'unitscan', 'unitscanAON', 'unitscanData', 'unitscanIntegrity'
 foreach ($name in $retired) {
     $old = Join-Path $addons $name

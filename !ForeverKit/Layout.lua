@@ -92,10 +92,6 @@ ForeverKitLayout = {
 
 	questie = { "TOPRIGHT", "UIParent", "TOPRIGHT", -14 - edgeInset, -310 },
 
-	restedxp = {
-		activeTargetFrame = { "TOPLEFT", "UIParent", "TOPLEFT", 30 + edgeInset, -290 },
-	},
-
 	-- Raid-style party frames, just left of the player frame.
 	party = { point = "TOPRIGHT", relativePoint = "CENTER", x = -480, y = -240 },
 

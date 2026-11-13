@@ -61,7 +61,6 @@ To reset your layout, or fit it to a new monitor, type `/forever` in chat.
 | Addon | What it does |
 |---|---|
 | Questie | Shows quests on your map. |
-| RestedXP | Tells you where to go next. Free to about level 20. |
 | Follow The Arrow | A free levelling guide with an arrow to your next step. |
 | Bartender4 | Your action bars. Type `/bt` to change them. |
 | SexyMap | Your big square minimap. Type `/sexymap` to change it. |

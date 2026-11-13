@@ -1,6 +1,6 @@
 -- Forever Kit. The ! in the folder name loads this before other addons, so a
--- character's layout is in place before Bartender4, SexyMap, Questie, and
--- RestedXP read their settings.
+-- character's layout is in place before Bartender4, SexyMap, and Questie
+-- read their settings.
 --
 -- Layout.lua is applied once per character, and /forever applies it again.
 -- Config.lua and Personal.lua hold binds, game settings, macros, and spell
@@ -111,17 +111,6 @@ end
 local function seedQuestie()
 	QuestieConfig = QuestieConfig or {}
 	ensure(ensure(QuestieConfig, "profiles"), "Default").TrackerLocation = Layout.questie
-end
-
-local function seedRestedXP()
-	RXPSettings = RXPSettings or {}
-	local key = characterKey(" - ")
-	ensure(RXPSettings, "profileKeys")[key] = key
-	local profile = ensure(ensure(RXPSettings, "profiles"), key)
-	local positions = ensure(profile, "framePositions")
-	for frameName, anchor in pairs(Layout.restedxp) do
-		positions[frameName] = { anchor }
-	end
 end
 
 local function seedLeatrix()
@@ -318,7 +307,7 @@ end
 
 local seeders = {
 	Bartender4 = seedBartender, SexyMap = seedSexyMap,
-	Questie = seedQuestie, RXPGuides = seedRestedXP,
+	Questie = seedQuestie,
 }
 local onceSeeders = {
 	Bartender4 = { run = showStatusBar, version = 1 },

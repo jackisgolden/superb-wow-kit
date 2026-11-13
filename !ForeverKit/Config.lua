@@ -36,6 +36,7 @@ ForeverKitConfig = {
 		cameraSmoothStyle = 0,
 		cameraFov = 90,
 		nameplateShowEnemies = 1,
+		questPOI = 0,
 	},
 	leatrix = {
 		AutoRepairGear = "On",

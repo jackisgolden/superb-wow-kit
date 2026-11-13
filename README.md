@@ -48,6 +48,7 @@ The minimap has no addon icons. Type these in chat to open each addon's settings
 |---|---|
 | `/bt` | Action bars |
 | `/ltp` | Leatrix Plus, for game tweaks |
+| `/ltm` | Leatrix Maps, for the world map |
 | `/ft` | Threat meter |
 | `/wt` | Spells you can learn |
 | `/fv` | Trainers and vendors on the map |
@@ -67,6 +68,7 @@ To reset your layout, or fit it to a new monitor, type `/forever` in chat.
 | Bagnon | All your bags in one window. |
 | Auctionator | Makes the Auction House usable. |
 | Leatrix Plus | Small fixes the game should have had. Type `/ltp`. |
+| Leatrix Maps | Shows the whole map before you have explored it. Type `/ltm`. |
 
 ---
 

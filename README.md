@@ -36,7 +36,7 @@ A faded bar on the right edge is for things like your Hearthstone and food. It l
 
 Enemies show health bars above their heads, and your gear repairs itself when you open a repair vendor.
 
-Your health card and your party's cards sit near the middle of the screen, with your party stacked above and to the left. Type `/ft` for the threat meter, which shows who is closest to pulling aggro.
+Your health card and your party's cards sit near the middle of the screen, with your party stacked above and to the left.
 
 Your spellbook has a tab listing every spell you can learn and what it costs.
 
@@ -47,9 +47,7 @@ The minimap has no addon icons. Type these in chat to open each addon's settings
 | Type | Opens |
 |---|---|
 | `/bt` | Action bars |
-| `/ltp` | Leatrix Plus, for game tweaks |
-| `/ltm` | Leatrix Maps, for the world map |
-| `/ft` | Threat meter |
+| `/eui` | EllesmereUI, for the minimap, bags, health cards and world map |
 | `/wt` | Spells you can learn |
 
 To reset your layout, or fit it to a new monitor, type `/forever` in chat.
@@ -65,11 +63,9 @@ If the game stutters, type `/forever cpu`. It lists the addons costing the most 
 | Questie | Shows quests on your map. |
 | Follow The Arrow | A free levelling guide with an arrow to your next step. |
 | Bartender4 | Your action bars. Type `/bt` to change them. |
-| SexyMap | Your big square minimap. Type `/sexymap` to change it. |
+| EllesmereUI | Your health cards, square minimap, revealed world map, and auto repair. Type `/eui`. |
 | Bagnon | All your bags in one window. |
 | Auctionator | Makes the Auction House usable. |
-| Leatrix Plus | Small fixes the game should have had. Type `/ltp`. |
-| Leatrix Maps | Shows the whole map before you have explored it. Type `/ltm`. |
 
 ---
 

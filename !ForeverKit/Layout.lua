@@ -6,7 +6,7 @@
 -- are a bar's top-left corner, measured from the named screen point.
 --
 -- Raise VERSION to re-apply this for every character. Raise frames.version to
--- re-apply only the unit frames and threat meter. /forever re-applies it all,
+-- re-apply only the unit frames. /forever re-applies it all,
 -- which also fits the edges to a new monitor.
 
 local BUTTON = 45
@@ -14,13 +14,6 @@ local GAP = 2
 local ROW = BUTTON + GAP
 local BAR_LEFT = -(12 * BUTTON + 11 * GAP) / 2
 local BOTTOM_ROW_TOP = 67
-
-local MAP_SCALE = 1.5
-local ICON_SIZE = 1          -- on-screen icon size, relative to the default
-local ICON_OFFSET = 8        -- how far icons sit outside the map edge
-local MAP_HALF_WIDTH = 70
-
-local iconScale = ICON_SIZE / MAP_SCALE
 
 -- How far an ultrawide's edges sit outside the centered 16:9 area.
 local edgeInset = math.max(0, (GetScreenWidth() - GetScreenHeight() * 16 / 9) / 2)
@@ -40,7 +33,6 @@ local CARD_BOTTOM = BLOCK_TOP + ROW + SPACE      -- clears the stance bar
 local CARD_OPACITY = 60
 
 local PARTY_SHIFT = 2 * ROW  -- how far left of the player card the party sits
-local THREAT_WIDTH = 274
 
 local HEALTH_GREEN = { r = 37 / 255, g = 193 / 255, b = 29 / 255 }
 
@@ -75,19 +67,8 @@ ForeverKitLayout = {
 		},
 	},
 
-	sexymap = {
-		scale = MAP_SCALE,
-		iconScale = iconScale,
-		-- SexyMap places an icon at (half width + radius) in the icon's own
-		-- scale, so a smaller icon needs a larger radius to stay on the edge.
-		iconRadius = (MAP_HALF_WIDTH + ICON_OFFSET) / iconScale - MAP_HALF_WIDTH,
-		shape = 130871,
-		x = -8 - edgeInset / MAP_SCALE,
-		y = -8,
-	},
-
-	-- SexyMap only manages some addons' icons, so the kit hides these on every
-	-- login. Each addon's menu stays on its chat command.
+	-- The kit hides addon icons on the minimap on every login. Each addon's menu
+	-- stays on its chat command.
 	minimapIcons = { "^LibDBIcon10_", "MinimapButton$", "MinimapBadge$" },
 
 	questie = { "TOPRIGHT", "UIParent", "TOPRIGHT", -14 - edgeInset, -310 },
@@ -118,11 +99,6 @@ ForeverKitLayout = {
 				point = "BOTTOMLEFT", relPoint = "BOTTOM",
 				x = BAR_LEFT - PARTY_SHIFT, y = CARD_BOTTOM + CARD_HEIGHT + SPACE,
 			},
-		},
-		-- ForeverThreat anchors its bottom center, beside the block and as tall as it.
-		threat = {
-			point = "BOTTOM", x = BLOCK_RIGHT + 2 * SPACE + THREAT_WIDTH / 2, y = BLOCK_BOTTOM,
-			frameWidth = THREAT_WIDTH, frameHeight = span(3),
 		},
 	},
 }

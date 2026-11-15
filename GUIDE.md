@@ -20,7 +20,3 @@ Every class fits the same buttons, so a new character never means new habits. Ke
 Keep rarely used things on the top row, with Ctrl + Shift. Buffs, stances, and mounts live there. Food, water, and your Hearthstone go on the faded bar, on Alt + Q, E, R, F, C and V.
 
 Leave a key empty until your class learns something for it. At level 60 you will still be using the same keys.
-
-## Leading a group
-
-Type `/ft` to see the threat meter. It shows who is closest to pulling aggro.

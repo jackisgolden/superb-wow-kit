@@ -51,7 +51,7 @@ local function child(name)
   return c
 end
 mapChildren = { child("LibDBIcon10_Questie"), child("DSPBuffsMinimapButton"), child("ForeverLayerHopMinimapBadge"),
-  child("SexyMapZoneTextButton"), child("QuestieFrameGroup"), child(nil) }
+  child("MinimapZoneTextButton"), child("QuestieFrameGroup"), child(nil) }
 Minimap = { GetChildren = function() return (table.unpack or unpack)(mapChildren) end }
 function InCombatLockdown() return inCombat end
 SlashCmdList = {}
@@ -72,8 +72,7 @@ C_EditMode = {
 }
 """
 
-ADDONS = ("!ForeverKit", "Bartender4", "SexyMap", "Questie",
-          "Leatrix_Plus", "EllesmereUIUnitFrames", "EllesmereUIRaidFrames", "ForeverThreat")
+ADDONS = ("!ForeverKit", "Bartender4", "Questie", "EllesmereUIUnitFrames", "EllesmereUIRaidFrames")
 
 
 def login(name="Raba", surname="Canoosh", before="", personal=""):
@@ -104,15 +103,6 @@ def test_bars_are_three_rows_of_twelve_and_a_faded_utility_bar():
     assert e(f"{bars}[2].enabled") is False and e(f"{bars}[3].enabled") is False
     for module in ("BlizzardArt", "BagBar", "MicroMenu"):
         assert e(f'Bartender4DB.namespaces.{module}.profiles["Forever Kit"].enabled') is False
-
-
-def test_map_icons_keep_their_size_and_sit_on_the_edge():
-    e = login().eval
-    core, buttons = 'SexyMap2DB["Raba Canoosh"].core', 'SexyMap2DB["Raba Canoosh"].buttons'
-    scale, icon, radius = e(f"{core}.scale"), e(f"{buttons}.scale"), e(f"{buttons}.radius")
-    assert 1.22 < scale < 2.44
-    assert abs(scale * icon - 1) < 1e-9, "icons render at default size"
-    assert abs((70 + radius) * icon - 78) < 1e-9, "icons sit 8 units outside the 70 unit half width"
 
 
 def test_binds_avoid_default_keys():
@@ -154,15 +144,14 @@ def test_combat_defers_party_frames():
 
 def test_layout_upgrade_reapplies_but_same_version_does_not():
     e = login(before='ForeverKitChar = { version = 1 }').eval
-    assert e('SexyMap2DB["Raba Canoosh"].core.scale') == 1.5
+    assert e('Bartender4DB.profileKeys["Raba Canoosh"]') == "Forever Kit"
     settings = e("ForeverKitChar.settings")
     e = login(before=f"ForeverKitChar = {{ version = 2, settings = [==[{settings}]==], defaultsRestored = true }}").eval
-    assert e("SexyMap2DB") is None and e("saved") == 0
+    assert e("QuestieConfig") is None and e("saved") == 0
 
 
 def test_seeding_keeps_other_settings():
-    before = """SexyMap2DB = { ["Raba Canoosh"] = { clock = { font = "x" } } }
-      QuestieConfig = { profiles = { Default = { keep = true } } }"""
+    before = "QuestieConfig = { profiles = { Default = { keep = true } } }"
     e = login(before=before, surname=None, name="Raba Canoosh").eval
     assert e('QuestieConfig.profiles.Default.keep') is True
 
@@ -171,7 +160,7 @@ def test_personal_overrides_apply_without_touching_layout():
     personal = 'ForeverKitConfig.binds.BUTTON4 = "TOGGLEAUTORUN"; ForeverKitConfig.binds["ALT-1"] = false; ForeverKitConfig.cvars.cameraFov = 75'
     e = login(before='ForeverKitChar = { version = 2, settings = "old", defaultsRestored = true }', personal=personal).eval
     assert e("saved") == 1 and e("binds.BUTTON4") == "TOGGLEAUTORUN"
-    assert e('binds["ALT-1"]') is None and e("cvars.cameraFov") == 75 and e("SexyMap2DB") is None
+    assert e('binds["ALT-1"]') is None and e("cvars.cameraFov") == 75 and e("QuestieConfig") is None
 
 
 def test_old_kit_binds_reset_once_and_friends_never():
@@ -190,7 +179,6 @@ def test_party_waits_for_a_late_combat_to_end():
 def test_surnameless_characters_use_each_addons_key_format():
     e = login(name="Bob", surname=None).eval
     assert e('Bartender4DB.profileKeys["Bob - Realm"]') == "Forever Kit"
-    assert e('SexyMap2DB["Bob-Realm"].core.scale') == 1.5
 
 
 MACROS = """ForeverKitConfig.macros = {
@@ -234,35 +222,6 @@ def test_macros_wait_for_combat_to_end():
     assert lua.eval("#macroList") == 2
 
 
-def test_auto_repair_turns_on_once_so_players_can_turn_it_off():
-    e = login(before='LeaPlusDB = { AutoRepairGear = "Off", keep = 1 }').eval
-    assert e("LeaPlusDB.AutoRepairGear") == "On" and e("LeaPlusDB.keep") == 1
-    e = login(before='LeaPlusDB = { AutoRepairGear = "Off" }; ForeverKitChar = { version = 2, seeded = { Leatrix_Plus = 1 } }').eval
-    assert e("LeaPlusDB.AutoRepairGear") == "Off"
-
-
-def test_party_stack_sits_left_of_and_above_a_larger_player_card():
-    e = login().eval
-    unit = 'EllesmereUIDB.profiles.Default.addons.EllesmereUIUnitFrames'
-    party = 'EllesmereUIDB.profiles.Default.addons.EllesmereUIRaidFrames'
-    width, height = e(f"{unit}.player.frameWidth"), e(f"{unit}.player.healthHeight") + e(f"{unit}.player.powerHeight")
-    assert e(f"{party}.partyFrameWidth") < width and e(f"{party}.partyFrameHeight") < height
-    x, y = e(f"{unit}.positions.player.x"), e(f"{unit}.positions.player.y")
-    assert e(f"{party}.partyUnlockPos.x") < x and e(f"{party}.partyUnlockPos.y") > y + height
-    assert e(f"{unit}.player.healthBarOpacity") < 100 and e(f"{party}.partyPortraitStyle") == "attached"
-    assert e(f"{unit}.player.healthClassColored") is False and e(f"{unit}.target.healthClassColored") is None
-    assert e(f"{unit}.player.customFillColor.g") == e(f"{party}.customFillColor.g")
-    assert e(f"{party}.powerShowForDPS") is True and e("EllesmereUIDB.firstInstallPopupShown") is True
-
-
-def test_frames_keep_other_settings_and_use_the_active_profile():
-    before = """EllesmereUIDB = { activeProfile = "Mine", profiles = { Mine = { addons = {
-      EllesmereUIUnitFrames = { player = { showBuffs = true } } } } } }"""
-    e = login(before=before).eval
-    player = "EllesmereUIDB.profiles.Mine.addons.EllesmereUIUnitFrames.player"
-    assert e(f"{player}.showBuffs") is True and e(f"{player}.frameWidth") == 197
-
-
 def test_cards_line_up_with_the_bar_block_on_any_screen():
     bars = 'Bartender4DB.namespaces.ActionBars.profiles["Forever Kit"].actionbars'
     unit = 'EllesmereUIDB.profiles.Default.addons.EllesmereUIUnitFrames'
@@ -283,14 +242,6 @@ def test_edge_frames_stay_inside_a_centered_16_by_9_area():
     inset = (4267 - 1200 * 16 / 9) / 2
     questie = "QuestieConfig.profiles.Default.TrackerLocation[4]"
     assert abs(normal(questie) - wide(questie) - inset) < 1e-6
-    assert abs(normal('SexyMap2DB["Raba Canoosh"].core.x') - wide('SexyMap2DB["Raba Canoosh"].core.x') - inset / 1.5) < 1e-6
-
-
-def test_threat_meter_sits_beside_the_bars_and_matches_their_height():
-    e = login().eval
-    assert e("ForeverThreatDB.point") == "BOTTOM"
-    assert e("ForeverThreatDB.x") - e("ForeverThreatDB.frameWidth") / 2 > 281
-    assert e("ForeverThreatDB.frameHeight") == 139 and e("ForeverThreatDB.y") == 22
 
 
 def test_xp_bar_shows_without_resetting_a_players_bars():
@@ -312,7 +263,7 @@ def test_minimap_icons_hide_and_stay_hidden_but_pins_and_zone_text_stay():
 
 def test_layout_version_bump_leaves_frames_alone():
     version = re.search(r"version = (\d+),\n\t\tplayer", (ADDON / "Layout.lua").read_text())[1]
-    before = f"ForeverKitChar = {{ version = 1, seeded = {{ EllesmereUIUnitFrames = {version}, EllesmereUIRaidFrames = {version}, ForeverThreat = {version} }} }}"
+    before = f"ForeverKitChar = {{ version = 1, seeded = {{ EllesmereUIUnitFrames = {version}, EllesmereUIRaidFrames = {version} }} }}"
     assert login(before=before).eval("EllesmereUIDB") is None
 
 

@@ -1,11 +1,11 @@
 -- Forever Kit. The ! in the folder name loads this before other addons, so a
--- character's layout is in place before Bartender4, SexyMap, and Questie
--- read their settings.
+-- character's layout is in place before Bartender4 and Questie read their
+-- settings.
 --
 -- Layout.lua is applied once per character, and /forever applies it again.
 -- Config.lua and Personal.lua hold binds, game settings, macros, and spell
--- placement, which apply at login whenever they change. Leatrix Plus options
--- and EllesmereUI frames apply once per character, each on its own version.
+-- placement, which apply at login whenever they change. EllesmereUI frames
+-- apply once per character, on their own version.
 
 local Layout = ForeverKitLayout
 
@@ -69,55 +69,9 @@ local function showStatusBar()
 	ensure(ensure(namespace, "profiles"), Layout.profile).enabled = true
 end
 
-local function seedSexyMap()
-	if type(SexyMap2DB) ~= "table" then SexyMap2DB = {} end
-	local spec = Layout.sexymap
-	local profile = ensure(SexyMap2DB, characterKey("-"))
-	profile.core = {
-		lock = true, clamp = true, rightClickToConfig = true, autoZoom = 0, northTag = false,
-		shape = spec.shape, scale = spec.scale,
-		point = "TOPRIGHT", relpoint = "TOPRIGHT", x = spec.x, y = spec.y,
-	}
-	profile.coordinates = {
-		enabled = false, xOffset = 0, yOffset = 10, updateRate = 1, monochrome = false,
-		font = "Friz Quadrata TT", outline = "NONE", coordPrecision = "%d,%d",
-		fontColor = {}, borderColor = {}, backgroundColor = {},
-	}
-	profile.buttons = {
-		radius = spec.iconRadius, scale = spec.iconScale,
-		lockDragging = false, allowDragging = true, controlVisibility = true,
-		dragPositions = {},
-		visibilitySettings = {
-			MinimapZoomIn = "never", MinimapZoomOut = "never", MiniMapWorldMapButton = "never",
-			AddonCompartmentFrame = "never", MiniMapMailFrame = "always",
-			DayNight = "hover", ExpansionLandingPageMinimapButton = "hover", CraftingOrder = "hover",
-			TimeManagerClockButton = "hover", SexyMapZoneTextButton = "hover",
-		},
-	}
-	profile.borders = {
-		applyPreset = false, borders = {}, hideBlizzard = true,
-		backdrop = {
-			show = false, textureColor = {}, borderColor = {}, scale = 0.5,
-			settings = {
-				bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-				edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-				tile = false, edgeSize = 16,
-				insets = { top = 4, right = 4, left = 4, bottom = 4 },
-			},
-		},
-	}
-end
-
 local function seedQuestie()
 	QuestieConfig = QuestieConfig or {}
 	ensure(ensure(QuestieConfig, "profiles"), "Default").TrackerLocation = Layout.questie
-end
-
-local function seedLeatrix()
-	LeaPlusDB = LeaPlusDB or {}
-	for option, value in pairs(ForeverKitConfig.leatrix) do
-		LeaPlusDB[option] = value
-	end
 end
 
 -- EllesmereUI fills missing keys from its defaults, so a partial profile keeps
@@ -149,11 +103,6 @@ end
 local function seedPartyFrames()
 	EllesmereUIDB = EllesmereUIDB or {}
 	merge(frameProfile(EllesmereUIDB, "EllesmereUIRaidFrames"), Layout.frames.party)
-end
-
-local function seedThreat()
-	ForeverThreatDB = ForeverThreatDB or {}
-	merge(ForeverThreatDB, Layout.frames.threat)
 end
 
 local function findSetting(system, settingId)
@@ -306,15 +255,12 @@ local function hideMinimapIcons()
 end
 
 local seeders = {
-	Bartender4 = seedBartender, SexyMap = seedSexyMap,
-	Questie = seedQuestie,
+	Bartender4 = seedBartender, Questie = seedQuestie,
 }
 local onceSeeders = {
 	Bartender4 = { run = showStatusBar, version = 1 },
-	Leatrix_Plus = { run = seedLeatrix, version = 1 },
 	EllesmereUIUnitFrames = { run = seedUnitFrames, version = Layout.frames.version },
 	EllesmereUIRaidFrames = { run = seedPartyFrames, version = Layout.frames.version },
-	ForeverThreat = { run = seedThreat, version = Layout.frames.version },
 }
 local fresh = false
 local frame = CreateFrame("Frame")

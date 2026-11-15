@@ -6,8 +6,8 @@
 -- its bottom-left corner, measured from the named screen point.
 --
 -- Each part has a version. Raise one to re-apply that part for every
--- character. /forever re-applies them all. /forever re-applies it all,
--- which also fits the edges to a new monitor.
+-- character. /forever re-applies them all, which also fits the edges to a
+-- new monitor.
 
 local BUTTON = 45
 local GAP = 2

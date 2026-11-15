@@ -4,6 +4,7 @@
 # author's release, and replaces only those addon folders. It never touches
 # WTF, where settings live. A pinned file in addons.tsv covers a failed lookup.
 # A row's folders column limits which folders of that addon's zip are installed.
+# A github row's file carries its pin's version, and the lookup matches any version.
 #
 # WOW_KIT_ADDONS overrides the target AddOns folder.
 
@@ -63,7 +64,8 @@ function Get-Url($row) {
     if ($row.source -eq 'github') {
         try {
             $rel = Invoke-RestMethod -UseBasicParsing -UserAgent $Agent -TimeoutSec 60 "https://api.github.com/repos/$($row.id)/releases/latest"
-            $asset = $rel.assets | Where-Object { $_.name -eq $row.file } | Select-Object -First 1
+            $pattern = $row.file.Replace($row.pin.TrimStart('v'), '*')
+            $asset = $rel.assets | Where-Object { $_.name -like $pattern } | Select-Object -First 1
             if ($asset) { return $asset.browser_download_url }
         } catch { }
         return "https://github.com/$($row.id)/releases/download/$($row.pin)/$($row.file)"
@@ -112,7 +114,7 @@ New-Item -ItemType Directory -Path $work | Out-Null
 $retired = 'AtlasBIStooltips', 'AtlasLootClassic', 'AtlasLootClassic_Collections', 'AtlasLootClassic_Crafting',
     'AtlasLootClassic_Data', 'AtlasLootClassic_DungeonsAndRaids', 'AtlasLootClassic_Factions', 'AtlasLootClassic_Options',
     'AtlasLootClassic_PvP', 'Details', 'Details_Compare2', 'Details_DataStorage', 'Details_EncounterDetails',
-    'Details_RaidCheck', 'Details_Streamer', 'Details_TinyThreat', 'Details_Vanguard', 'GatherMate2', 'GatherMate2_Data',
+    'Details_RaidCheck', 'Details_Streamer', 'Details_TinyThreat', 'Details_Vanguard', 'ForeverLayerHop', 'GatherMate2', 'GatherMate2_Data',
     'GatherMate2Storage_Dragonflight', 'GatherMate2Storage_Midnight', 'GatherMate2Storage_TheWarWithin',
     'GuideLime_TUGs_Forever', 'Guidelime', 'Prat-3.0', 'RXPGuides', 'Safeguard', 'WeaponSwingTimer',
     'unitscan', 'unitscanAON', 'unitscanData', 'unitscanIntegrity'

@@ -72,7 +72,7 @@ C_EditMode = {
 }
 """
 
-ADDONS = ("!ForeverKit", "Bartender4", "Questie", "EllesmereUIUnitFrames", "EllesmereUIRaidFrames")
+ADDONS = ("!ForeverKit", "Bartender4", "EllesmereUIMinimap", "EllesmereUIRaidFrames", "EllesmereUIUnitFrames", "Questie")
 
 
 def login(name="Raba", surname="Canoosh", before="", personal=""):
@@ -147,7 +147,7 @@ def test_layout_upgrade_reapplies_but_same_version_does_not():
     assert e('Bartender4DB.profileKeys["Raba Canoosh"]') == "Forever Kit"
     settings = e("ForeverKitChar.settings")
     e = login(before=f"ForeverKitChar = {{ version = 2, settings = [==[{settings}]==], defaultsRestored = true }}").eval
-    assert e("QuestieConfig") is None and e("saved") == 0
+    assert e("saves") == 0 and e("saved") == 0
 
 
 def test_seeding_keeps_other_settings():
@@ -160,7 +160,7 @@ def test_personal_overrides_apply_without_touching_layout():
     personal = 'ForeverKitConfig.binds.BUTTON4 = "TOGGLEAUTORUN"; ForeverKitConfig.binds["ALT-1"] = false; ForeverKitConfig.cvars.cameraFov = 75'
     e = login(before='ForeverKitChar = { version = 2, settings = "old", defaultsRestored = true }', personal=personal).eval
     assert e("saved") == 1 and e("binds.BUTTON4") == "TOGGLEAUTORUN"
-    assert e('binds["ALT-1"]') is None and e("cvars.cameraFov") == 75 and e("QuestieConfig") is None
+    assert e('binds["ALT-1"]') is None and e("cvars.cameraFov") == 75 and e("saves") == 0
 
 
 def test_old_kit_binds_reset_once_and_friends_never():
@@ -263,8 +263,27 @@ def test_minimap_icons_hide_and_stay_hidden_but_pins_and_zone_text_stay():
 
 def test_layout_version_bump_leaves_frames_alone():
     version = re.search(r"version = (\d+),\n\t\tplayer", (ADDON / "Layout.lua").read_text())[1]
-    before = f"ForeverKitChar = {{ version = 1, seeded = {{ EllesmereUIUnitFrames = {version}, EllesmereUIRaidFrames = {version} }} }}"
+    before = f"ForeverKitChar = {{ version = 1, seeded = {{ EllesmereUIUnitFrames = {version}, EllesmereUIRaidFrames = {version}, EllesmereUIMinimap = 1 }} }}"
     assert login(before=before).eval("EllesmereUIDB") is None
+
+
+def test_minimap_is_twice_stock_size_in_the_top_right_with_the_tracker_below():
+    e = login().eval
+    m = 'EllesmereUIDB.profiles.Default.addons.EllesmereUIMinimap.minimap'
+    assert e(f"{m}.mapSize") == 2 * 198 and e(f"{m}._capturedOnce") is True
+    assert e(f"{m}.position.point") == "TOPRIGHT" and e(f"{m}.position.relPoint") == "TOPRIGHT"
+    tracker = "QuestieConfig.profiles.Default.TrackerLocation"
+    assert e(f"{tracker}[5]") < e(f"{m}.position.y") - e(f"{m}.mapSize"), "tracker starts below the map"
+    wide = login(before="screenWidth, screenHeight = 4267, 1200").eval
+    assert abs(e(f"{m}.position.x") - wide(f"{m}.position.x") - (4267 - 1200 * 16 / 9) / 2) < 1e-6
+
+
+def test_minimap_and_tracker_move_once_for_characters_already_set_up():
+    before = """ForeverKitChar = { version = 2, seeded = {} }
+      QuestieConfig = { profiles = { Default = { TrackerLocation = { "TOPRIGHT", "UIParent", "TOPRIGHT", -14, -310 } } } }"""
+    e = login(before=before).eval
+    assert e("QuestieConfig.profiles.Default.TrackerLocation[5]") < -396
+    assert e("ForeverKitChar.seeded.EllesmereUIMinimap") == 1 and e("ForeverKitChar.seeded.Questie") == 1
 
 
 def test_cpu_report_ranks_loaded_addons_and_saves_them():

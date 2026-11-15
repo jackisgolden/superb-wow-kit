@@ -5,8 +5,8 @@
 -- centered 16:9 area, so an ultrawide keeps them in view. Bartender4 positions
 -- are a bar's top-left corner, measured from the named screen point.
 --
--- Raise VERSION to re-apply this for every character. Raise frames.version to
--- re-apply only the unit frames. /forever re-applies it all,
+-- Raise VERSION to re-apply this for every character. Raise frames.version,
+-- minimap.version, or questie.version to re-apply only that part. /forever re-applies it all,
 -- which also fits the edges to a new monitor.
 
 local BUTTON = 45
@@ -33,6 +33,10 @@ local CARD_BOTTOM = BLOCK_TOP + ROW + SPACE      -- clears the stance bar
 local CARD_OPACITY = 60
 
 local PARTY_SHIFT = 2 * ROW  -- how far left of the player card the party sits
+
+local MAP_SIZE = 396
+local MAP_TOP = 58           -- leaves room for the buff row above the map
+local MAP_RIGHT = 27
 
 local HEALTH_GREEN = { r = 37 / 255, g = 193 / 255, b = 29 / 255 }
 
@@ -71,7 +75,15 @@ ForeverKitLayout = {
 	-- stays on its chat command.
 	minimapIcons = { "^LibDBIcon10_", "MinimapButton$", "MinimapBadge$" },
 
-	questie = { "TOPRIGHT", "UIParent", "TOPRIGHT", -14 - edgeInset, -310 },
+	-- The EllesmereUI minimap, by its top right corner. Its size slider runs
+	-- from 100 to 600, and 198 is the stock size.
+	minimap = { version = 1, size = MAP_SIZE, x = -MAP_RIGHT - edgeInset, y = -MAP_TOP },
+
+	-- The quest tracker hangs below the minimap.
+	questie = {
+		version = 1,
+		location = { "TOPRIGHT", "UIParent", "TOPRIGHT", -14 - edgeInset, -(MAP_TOP + MAP_SIZE + 2 * SPACE) },
+	},
 
 	-- Raid-style party frames, just left of the player frame.
 	party = { point = "TOPRIGHT", relativePoint = "CENTER", x = -480, y = -240 },

@@ -71,7 +71,7 @@ end
 
 local function seedQuestie()
 	QuestieConfig = QuestieConfig or {}
-	ensure(ensure(QuestieConfig, "profiles"), "Default").TrackerLocation = Layout.questie
+	ensure(ensure(QuestieConfig, "profiles"), "Default").TrackerLocation = Layout.questie.location
 end
 
 -- EllesmereUI fills missing keys from its defaults, so a partial profile keeps
@@ -103,6 +103,16 @@ end
 local function seedPartyFrames()
 	EllesmereUIDB = EllesmereUIDB or {}
 	merge(frameProfile(EllesmereUIDB, "EllesmereUIRaidFrames"), Layout.frames.party)
+end
+
+-- A set position stops EllesmereUI from capturing the stock minimap's spot.
+local function seedMinimap()
+	EllesmereUIDB = EllesmereUIDB or {}
+	local spec = Layout.minimap
+	merge(frameProfile(EllesmereUIDB, "EllesmereUIMinimap"), { minimap = {
+		mapSize = spec.size, _capturedOnce = true,
+		position = { point = "TOPRIGHT", relPoint = "TOPRIGHT", x = spec.x, y = spec.y },
+	} })
 end
 
 local function findSetting(system, settingId)
@@ -261,6 +271,8 @@ local onceSeeders = {
 	Bartender4 = { run = showStatusBar, version = 1 },
 	EllesmereUIUnitFrames = { run = seedUnitFrames, version = Layout.frames.version },
 	EllesmereUIRaidFrames = { run = seedPartyFrames, version = Layout.frames.version },
+	EllesmereUIMinimap = { run = seedMinimap, version = Layout.minimap.version },
+	Questie = { run = seedQuestie, version = Layout.questie.version },
 }
 local fresh = false
 local frame = CreateFrame("Frame")

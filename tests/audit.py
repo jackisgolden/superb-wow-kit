@@ -8,6 +8,9 @@ Run from the repo root: python tests/audit.py
   --extra rows.tsv   also audit candidate rows that are not in the kit
   --pin              rewrite addons.tsv so each pin is the newest release
 
+A row with hold set is audited at its pin and never re-pinned. The table says
+when a newer release is waiting.
+
 Fails when an addon has no Forever build or cannot be downloaded. Everything
 else is reported as a flag, for a person to judge.
 """
@@ -53,7 +56,7 @@ def newest(row):
         asset = next(a for a in release["assets"] if re.fullmatch(pattern, a["name"]))
         return {
             "url": asset["browser_download_url"], "file": asset["name"], "pin": release["tag_name"],
-            "date": release["published_at"][:10], "releases": None,
+            "date": release["published_at"][:10], "releases": None, "waiting": None,
         }
     project = json.loads(get(f"https://api.cfwidget.com/{row['id']}"))
     files = [f for f in project["files"] if f["type"] == "release" and FLAVOR in f["versions"]]
@@ -61,11 +64,17 @@ def newest(row):
         raise LookupError("no Forever release")
     files.sort(key=lambda f: f["uploaded_at"], reverse=True)
     file = files[0]
+    waiting = None
+    if row.get("hold"):
+        held = next(f for f in files if str(f["id"]) == row["pin"])
+        waiting = file["name"] if held is not file else None
+        file = held
     pin = str(file["id"])
     name = urllib.parse.quote(file["name"])
     return {
         "url": f"https://mediafilez.forgecdn.net/files/{pin[:4]}/{int(pin[4:])}/{name}",
         "file": file["name"], "pin": pin, "date": file["uploaded_at"][:10], "releases": len(files),
+        "waiting": waiting,
     }
 
 
@@ -185,7 +194,8 @@ def main():
         lines.append("| " + " | ".join([
             label, release["file"], str(age), str(release["releases"] or ""),
             mb(stats["disk"]), mb(stats["media"]), mb(stats["raw"]), str(stats["lines"]),
-            str(stats["on_update"]), str(stats["tickers"]), "; ".join(flags(stats)),
+            str(stats["on_update"]), str(stats["tickers"]),
+            "; ".join(flags(stats) + ([f"held, {release['waiting']} is waiting"] if release["waiting"] else [])),
         ]) + " |")
 
     report = "\n".join(lines)

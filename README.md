@@ -46,8 +46,7 @@ The minimap has no addon icons. Type these in chat to open each addon's settings
 
 | Type | Opens |
 |---|---|
-| `/bt` | Action bars |
-| `/eui` | EllesmereUI, for the minimap, bags, health cards and world map |
+| `/eui` | EllesmereUI, for the bars, minimap, bags, health cards and world map |
 | `/wt` | Spells you can learn |
 
 To reset your layout, or fit it to a new monitor, type `/forever` in chat.
@@ -62,9 +61,7 @@ If the game stutters, type `/forever cpu`. It lists the addons costing the most 
 |---|---|
 | Questie | Shows quests on your map. |
 | Follow The Arrow | A free levelling guide with an arrow to your next step. |
-| Bartender4 | Your action bars. Type `/bt` to change them. |
-| EllesmereUI | Your health cards, square minimap, revealed world map, and auto repair. Type `/eui`. |
-| Bagnon | All your bags in one window. |
+| EllesmereUI | Your action bars, health cards, square minimap, bags, revealed world map, and auto repair. Type `/eui`. |
 | Auctionator | Makes the Auction House usable. |
 
 ---

@@ -1,9 +1,7 @@
-source	id	pin	file	name	folders
-curseforge	6124	9620638	Auctionator-347.zip	Auctionator	
-curseforge	1592	9638308	Bagnon-12.1.11.zip	Bagnon	
-curseforge	1477613	9619179	EllesmereUI-v9.8.6.zip	EllesmereUI	EllesmereUI,EllesmereUIOptions,EllesmereUIUnitFrames,EllesmereUIRaidFrames,EllesmereUIMinimap,EllesmereUIBags,EllesmereUIQoL,EllesmereUIForeverEssentials
-curseforge	13501	9616627	Bartender4-4.18.4.1.zip	Bartender4	
-curseforge	334372	9602663	Questie-v12.9.0.zip	Questie	Questie
-github	Questie/QuestieDB	v1.1.1	QuestieDB-1.1.1-Forever.zip	QuestieDB	
-curseforge	1701676	9050658	WhatsTraining-1.1.1.zip	What's Training	
-curseforge	1470893	9637624	FollowTheArrow.zip	Follow The Arrow	
+source	id	pin	file	name	folders	hold
+curseforge	6124	9620638	Auctionator-347.zip	Auctionator		
+curseforge	1477613	9619179	EllesmereUI-v9.8.6.zip	EllesmereUI	EllesmereUI,EllesmereUIOptions,EllesmereUIUnitFrames,EllesmereUIRaidFrames,EllesmereUIMinimap,EllesmereUIBags,EllesmereUIQoL,EllesmereUIForeverEssentials,EllesmereUIActionBars	yes
+curseforge	334372	9602663	Questie-v12.9.0.zip	Questie	Questie	
+github	Questie/QuestieDB	v1.1.1	QuestieDB-1.1.1-Forever.zip	QuestieDB		
+curseforge	1701676	9050658	WhatsTraining-1.1.1.zip	What's Training		
+curseforge	1470893	9637624	FollowTheArrow.zip	Follow The Arrow		

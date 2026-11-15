@@ -2,11 +2,11 @@
 -- from the action bar block, the way a page is built from one grid unit: frames
 -- in the middle hang off the bottom of the screen with the bars, so they keep
 -- their spacing at any resolution, and frames on the screen edges stay inside a
--- centered 16:9 area, so an ultrawide keeps them in view. Bartender4 positions
--- are a bar's top-left corner, measured from the named screen point.
+-- centered 16:9 area, so an ultrawide keeps them in view. A bar's position is
+-- its bottom-left corner, measured from the named screen point.
 --
--- Raise VERSION to re-apply this for every character. Raise frames.version,
--- minimap.version, or questie.version to re-apply only that part. /forever re-applies it all,
+-- Each part has a version. Raise one to re-apply that part for every
+-- character. /forever re-applies them all. /forever re-applies it all,
 -- which also fits the edges to a new monitor.
 
 local BUTTON = 45
@@ -38,6 +38,18 @@ local MAP_SIZE = 396
 local MAP_TOP = 58           -- leaves room for the buff row above the map
 local MAP_RIGHT = 27
 
+local XP_HEIGHT = 10
+
+local HIDDEN = { barVisibility = "never", alwaysHidden = true }
+
+local function row()
+	return { numIcons = 12, numRows = 1, buttonWidth = BUTTON, buttonHeight = BUTTON, buttonPadding = GAP }
+end
+
+local function corner(x, y)
+	return { point = "BOTTOMLEFT", relPoint = "BOTTOM", x = x, y = y }
+end
+
 local HEALTH_GREEN = { r = 37 / 255, g = 193 / 255, b = 29 / 255 }
 
 local function card(side)
@@ -52,22 +64,26 @@ ForeverKitLayout = {
 	version = 2,
 	profile = "Forever Kit",
 
-	bartender = {
-		-- Bar ids are Bartender4's. Bar 1 is the bottom row.
+	-- EllesmereUI action bars. Bar2, Bar3 and Bar5 are the game's bottom left,
+	-- bottom right and left bars, which the Alt, Ctrl + Shift and utility keys press.
+	actionBars = {
+		version = 1,
 		bars = {
-			[1] = { rows = 1, x = BAR_LEFT, y = BOTTOM_ROW_TOP },
-			[6] = { rows = 1, x = BAR_LEFT, y = BOTTOM_ROW_TOP + ROW },
-			[5] = { rows = 1, x = BAR_LEFT, y = BOTTOM_ROW_TOP + 2 * ROW },
-			[4] = {
-				rows = 6, x = -104 - edgeInset, y = 320, point = "BOTTOMRIGHT",
-				fadeout = true, fadeoutalpha = 0.3,
+			MainBar = row(), Bar2 = row(), Bar3 = row(),
+			Bar5 = {
+				numIcons = 12, numRows = 6, buttonWidth = BUTTON, buttonHeight = BUTTON, buttonPadding = GAP,
+				barVisibility = "mouseover", mouseoverEnabled = true, mouseoverAlpha = 0.3,
 			},
+			Bar4 = HIDDEN, Bar6 = HIDDEN, Bar7 = HIDDEN, Bar8 = HIDDEN, MicroBar = HIDDEN, BagBar = HIDDEN,
+			XPBar = { width = span(12), height = XP_HEIGHT },
 		},
-		disabledBars = { 2, 3 },
-		hidden = { "BlizzardArt", "BagBar", "MicroMenu" },
-		placed = {
-			StatusTrackingBar = { x = -285, y = 20 },
-			StanceBar = { x = BAR_LEFT, y = BOTTOM_ROW_TOP + 2 * ROW + 40 },
+		positions = {
+			XPBar = { point = "BOTTOM", relPoint = "BOTTOM", x = 0, y = BLOCK_BOTTOM - SPACE / 2 - XP_HEIGHT },
+			MainBar = corner(BAR_LEFT, BLOCK_BOTTOM),
+			Bar2 = corner(BAR_LEFT, BLOCK_BOTTOM + ROW),
+			Bar3 = corner(BAR_LEFT, BLOCK_BOTTOM + 2 * ROW),
+			StanceBar = corner(BAR_LEFT, BLOCK_TOP + SPACE),
+			Bar5 = { point = "BOTTOMLEFT", relPoint = "BOTTOMRIGHT", x = -104 - edgeInset, y = 40 },
 		},
 	},
 

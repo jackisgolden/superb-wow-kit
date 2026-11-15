@@ -4,6 +4,7 @@
 # author's release, and replaces only those addon folders. It never touches
 # WTF, where settings live. A pinned file in addons.tsv covers a failed lookup.
 # A row's folders column limits which folders of that addon's zip are installed.
+# A row with hold set installs its pinned file and skips the lookup.
 # A github row's file carries its pin's version, and the lookup matches any version.
 #
 # WOW_KIT_ADDONS overrides the target AddOns folder.
@@ -49,6 +50,7 @@ function Find-Forever {
 }
 
 function Get-CurseFile($row) {
+    if ($row.hold) { return @{ id = $row.pin; name = $row.file } }
     try {
         $project = Invoke-RestMethod -UseBasicParsing -UserAgent $Agent -TimeoutSec 60 "https://api.cfwidget.com/$($row.id)"
         $file = $project.files |
@@ -111,7 +113,8 @@ $rows = $list | ConvertFrom-Csv -Delimiter "`t"
 
 $work = Join-Path $env:TEMP ("wow-forever-kit-" + [guid]::NewGuid())
 New-Item -ItemType Directory -Path $work | Out-Null
-$retired = 'AtlasBIStooltips', 'AtlasLootClassic', 'AtlasLootClassic_Collections', 'AtlasLootClassic_Crafting',
+$retired = 'AtlasBIStooltips', 'AtlasLootClassic', 'BagBrother', 'Bagnon', 'Bagnon_Bank', 'Bagnon_Config',
+    'Bagnon_GuildBank', 'Bagnon_VoidStorage', 'Bartender4', 'AtlasLootClassic_Collections', 'AtlasLootClassic_Crafting',
     'AtlasLootClassic_Data', 'AtlasLootClassic_DungeonsAndRaids', 'AtlasLootClassic_Factions', 'AtlasLootClassic_Options',
     'AtlasLootClassic_PvP', 'Details', 'Details_Compare2', 'Details_DataStorage', 'Details_EncounterDetails',
     'Details_RaidCheck', 'Details_Streamer', 'Details_TinyThreat', 'Details_Vanguard', 'ForeverLayerHop', 'ForeverThreat', 'ForeverVendors', 'GatherMate2', 'GatherMate2_Data',

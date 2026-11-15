@@ -1,72 +1,17 @@
 -- Forever Kit. The ! in the folder name loads this before other addons, so a
--- character's layout is in place before Bartender4 and Questie read their
+-- character's layout is in place before EllesmereUI and Questie read their
 -- settings.
 --
--- Layout.lua is applied once per character, and /forever applies it again.
--- Config.lua and Personal.lua hold binds, game settings, macros, and spell
--- placement, which apply at login whenever they change. EllesmereUI frames
--- apply once per character, on their own version.
+-- Each part of Layout.lua is applied once per character, on its own version,
+-- and /forever applies them all again. Config.lua and Personal.lua hold binds,
+-- game settings, macros, and spell placement, which apply at login whenever
+-- they change.
 
 local Layout = ForeverKitLayout
 
 local function ensure(parent, key)
 	if type(parent[key]) ~= "table" then parent[key] = {} end
 	return parent[key]
-end
-
-local function characterKey(separator)
-	local name, surname = UnitNameUnmodified("player")
-	if surname then
-		return name .. " " .. surname
-	end
-	return name .. separator .. GetRealmName()
-end
-
-local function barConfig(spec)
-	local config = {
-		version = 3, WoW10Layout = true, rows = spec.rows, padding = 2, showgrid = true,
-		position = { point = spec.point or "BOTTOM", x = spec.x, y = spec.y },
-	}
-	config.fadeout = spec.fadeout
-	config.fadeoutalpha = spec.fadeoutalpha
-	return config
-end
-
-local function seedBartender()
-	Bartender4DB = Bartender4DB or {}
-	local db, spec, name = Bartender4DB, Layout.bartender, Layout.profile
-	ensure(db, "profileKeys")[characterKey(" - ")] = name
-	ensure(db, "profiles")[name] = { blizzardVehicle = true, focuscastmodifier = false, outofrange = "hotkey" }
-
-	local namespaces = ensure(db, "namespaces")
-	local function put(namespace, data)
-		ensure(ensure(namespaces, namespace), "profiles")[name] = data
-	end
-
-	local bars = {}
-	for _, id in ipairs({ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15 }) do
-		bars[id] = { WoW10Layout = true }
-	end
-	for _, id in ipairs(spec.disabledBars) do
-		bars[id] = { version = 3, WoW10Layout = true, enabled = false }
-	end
-	for id, barSpec in pairs(spec.bars) do
-		bars[id] = barConfig(barSpec)
-	end
-	put("ActionBars", { actionbars = bars })
-
-	for _, module in ipairs(spec.hidden) do
-		put(module, { version = 3, enabled = false })
-	end
-	for module, position in pairs(spec.placed) do
-		put(module, { version = 3, enabled = true, position = { point = "BOTTOM", x = position.x, y = position.y } })
-	end
-end
-
-local function showStatusBar()
-	Bartender4DB = Bartender4DB or {}
-	local namespace = ensure(ensure(Bartender4DB, "namespaces"), "StatusTrackingBar")
-	ensure(ensure(namespace, "profiles"), Layout.profile).enabled = true
 end
 
 local function seedQuestie()
@@ -103,6 +48,17 @@ end
 local function seedPartyFrames()
 	EllesmereUIDB = EllesmereUIDB or {}
 	merge(frameProfile(EllesmereUIDB, "EllesmereUIRaidFrames"), Layout.frames.party)
+end
+
+-- EllesmereUI copies the game's own bar layout the first time it runs, which
+-- the captured flag stops. Its XP bar replaces the game's.
+local function seedActionBars()
+	EllesmereUIDB = EllesmereUIDB or {}
+	EllesmereUIDB._capturedOnce_EAB = true
+	local spec = Layout.actionBars
+	merge(frameProfile(EllesmereUIDB, "EllesmereUIActionBars"), {
+		useBlizzardDataBars = false, bars = spec.bars, barPositions = spec.positions,
+	})
 end
 
 -- A set position stops EllesmereUI from capturing the stock minimap's spot.
@@ -264,11 +220,8 @@ local function hideMinimapIcons()
 	end
 end
 
-local seeders = {
-	Bartender4 = seedBartender, Questie = seedQuestie,
-}
 local onceSeeders = {
-	Bartender4 = { run = showStatusBar, version = 1 },
+	EllesmereUIActionBars = { run = seedActionBars, version = Layout.actionBars.version },
 	EllesmereUIUnitFrames = { run = seedUnitFrames, version = Layout.frames.version },
 	EllesmereUIRaidFrames = { run = seedPartyFrames, version = Layout.frames.version },
 	EllesmereUIMinimap = { run = seedMinimap, version = Layout.minimap.version },
@@ -283,6 +236,12 @@ local function onLogin()
 		applySettings()
 		ForeverKitChar.settings = current
 		say("your keys and settings are up to date.")
+	end
+	-- EllesmereUI switches its bags off while another bag addon is installed,
+	-- and leaves them off after that addon is gone.
+	if not ForeverKitChar.bagsEnabled and C_AddOns and C_AddOns.EnableAddOn then
+		C_AddOns.EnableAddOn("EllesmereUIBags")
+		ForeverKitChar.bagsEnabled = true
 	end
 	if fresh then
 		ForeverKitChar.version = Layout.version
@@ -324,7 +283,6 @@ frame:SetScript("OnEvent", function(_, event, name)
 		ForeverKitChar = ForeverKitChar or {}
 		fresh = ForeverKitChar.version ~= Layout.version
 	else
-		if fresh and seeders[name] then seeders[name]() end
 		local once = onceSeeders[name]
 		local seeded = ensure(ForeverKitChar, "seeded")
 		if once and seeded[name] ~= once.version then
@@ -368,5 +326,6 @@ SlashCmdList.FOREVERKIT = function(argument)
 		return
 	end
 	ForeverKitChar.version = nil
+	ForeverKitChar.seeded = nil
 	ReloadUI()
 end

@@ -72,7 +72,7 @@ C_EditMode = {
 }
 """
 
-ADDONS = ("!ForeverKit", "Bartender4", "EllesmereUIMinimap", "EllesmereUIRaidFrames", "EllesmereUIUnitFrames", "Questie")
+ADDONS = ("!ForeverKit", "EllesmereUIActionBars", "EllesmereUIMinimap", "EllesmereUIRaidFrames", "EllesmereUIUnitFrames", "Questie")
 
 
 def login(name="Raba", surname="Canoosh", before="", personal=""):
@@ -90,19 +90,35 @@ def login(name="Raba", surname="Canoosh", before="", personal=""):
     return lua
 
 
+AB = "EllesmereUIDB.profiles.Default.addons.EllesmereUIActionBars"
+
+
 def test_bars_are_three_rows_of_twelve_and_a_faded_utility_bar():
     e = login().eval
-    bars = 'Bartender4DB.namespaces.ActionBars.profiles["Forever Kit"].actionbars'
-    assert e('Bartender4DB.profileKeys["Raba Canoosh"]') == "Forever Kit"
-    tops = [e(f"{bars}[{i}].position.y") for i in (1, 6, 5)]
-    assert tops == sorted(tops) and tops[1] - tops[0] == 47 and tops[2] - tops[1] == 47
-    for i in (1, 6, 5):
-        assert e(f"{bars}[{i}].rows") == 1 and e(f"{bars}[{i}].position.x") == -281
-        assert e(f"{bars}[{i}].version") == 3
-    assert e(f"{bars}[4].fadeout") is True and e(f"{bars}[4].fadeoutalpha") == 0.3
-    assert e(f"{bars}[2].enabled") is False and e(f"{bars}[3].enabled") is False
-    for module in ("BlizzardArt", "BagBar", "MicroMenu"):
-        assert e(f'Bartender4DB.namespaces.{module}.profiles["Forever Kit"].enabled') is False
+    bottoms = [e(f"{AB}.barPositions.{bar}.y") for bar in ("MainBar", "Bar2", "Bar3")]
+    assert bottoms[0] == 22 and bottoms[1] - bottoms[0] == 47 and bottoms[2] - bottoms[1] == 47
+    for bar in ("MainBar", "Bar2", "Bar3"):
+        assert e(f"{AB}.barPositions.{bar}.x") == -281 and e(f"{AB}.barPositions.{bar}.relPoint") == "BOTTOM"
+        assert e(f"{AB}.bars.{bar}.numIcons") == 12 and e(f"{AB}.bars.{bar}.numRows") == 1
+        assert e(f"{AB}.bars.{bar}.buttonWidth") == 45 and e(f"{AB}.bars.{bar}.buttonPadding") == 2
+    assert e(f"{AB}.bars.Bar5.numRows") == 6 and e(f"{AB}.bars.Bar5.mouseoverAlpha") == 0.3
+    for bar in ("Bar4", "Bar6", "Bar7", "Bar8", "MicroBar", "BagBar"):
+        assert e(f"{AB}.bars.{bar}.alwaysHidden") is True
+    assert e("EllesmereUIDB._capturedOnce_EAB") is True, "EllesmereUI must not copy the game's bar layout over this"
+
+
+def test_xp_bar_is_ellesmereuis_and_sits_under_the_bottom_row():
+    e = login().eval
+    assert e(f"{AB}.useBlizzardDataBars") is False
+    assert e(f"{AB}.bars.XPBar.width") == 562
+    top = e(f"{AB}.barPositions.XPBar.y") + e(f"{AB}.bars.XPBar.height")
+    assert 0 < e(f"{AB}.barPositions.XPBar.y") and top < e(f"{AB}.barPositions.MainBar.y")
+
+
+def test_forever_command_reapplies_every_part():
+    lua = login()
+    lua.execute('SlashCmdList.FOREVERKIT("")')
+    assert lua.eval("ForeverKitChar.version") is None and lua.eval("ForeverKitChar.seeded") is None
 
 
 def test_binds_avoid_default_keys():
@@ -144,7 +160,7 @@ def test_combat_defers_party_frames():
 
 def test_layout_upgrade_reapplies_but_same_version_does_not():
     e = login(before='ForeverKitChar = { version = 1 }').eval
-    assert e('Bartender4DB.profileKeys["Raba Canoosh"]') == "Forever Kit"
+    assert e("saves") == 1
     settings = e("ForeverKitChar.settings")
     e = login(before=f"ForeverKitChar = {{ version = 2, settings = [==[{settings}]==], defaultsRestored = true }}").eval
     assert e("saves") == 0 and e("saved") == 0
@@ -174,11 +190,6 @@ def test_party_waits_for_a_late_combat_to_end():
     lua.execute("inCombat = false")
     lua.globals().handler(None, "EDIT_MODE_LAYOUTS_UPDATED", None)
     assert lua.eval("saves") == 1
-
-
-def test_surnameless_characters_use_each_addons_key_format():
-    e = login(name="Bob", surname=None).eval
-    assert e('Bartender4DB.profileKeys["Bob - Realm"]') == "Forever Kit"
 
 
 MACROS = """ForeverKitConfig.macros = {
@@ -223,13 +234,12 @@ def test_macros_wait_for_combat_to_end():
 
 
 def test_cards_line_up_with_the_bar_block_on_any_screen():
-    bars = 'Bartender4DB.namespaces.ActionBars.profiles["Forever Kit"].actionbars'
     unit = 'EllesmereUIDB.profiles.Default.addons.EllesmereUIUnitFrames'
     seen = []
     for width, height in ((1920, 1080), (2133, 1200), (4267, 1200)):
         e = login(before=f"screenWidth, screenHeight = {width}, {height}").eval
         player, target = f"{unit}.positions.player", f"{unit}.positions.target"
-        assert e(f"{player}.x") == e(f"{bars}[1].position.x") and e(f"{target}.x") == -e(f"{player}.x")
+        assert e(f"{player}.x") == e(f"{AB}.barPositions.MainBar.x") and e(f"{target}.x") == -e(f"{player}.x")
         assert e(f"{player}.relPoint") == e(f"{target}.relPoint") == "BOTTOM"
         assert e(f"{unit}.player.frameWidth") + e(f"{unit}.player.healthHeight") + e(f"{unit}.player.powerHeight") == 233
         seen.append(e(f"{player}.y"))
@@ -244,15 +254,6 @@ def test_edge_frames_stay_inside_a_centered_16_by_9_area():
     assert abs(normal(questie) - wide(questie) - inset) < 1e-6
 
 
-def test_xp_bar_shows_without_resetting_a_players_bars():
-    bar = 'Bartender4DB.namespaces.StatusTrackingBar.profiles["Forever Kit"]'
-    assert login().eval(f"{bar}.enabled") is True
-    before = """ForeverKitChar = { version = 2, settings = "old" }
-      Bartender4DB = { keep = 1, namespaces = { StatusTrackingBar = { profiles = { ["Forever Kit"] = { position = { x = 1 } } } } } }"""
-    e = login(before=before).eval
-    assert e(f"{bar}.enabled") is True and e(f"{bar}.position.x") == 1 and e("Bartender4DB.keep") == 1
-
-
 def test_minimap_icons_hide_and_stay_hidden_but_pins_and_zone_text_stay():
     lua = login()
     e = lua.eval
@@ -263,7 +264,7 @@ def test_minimap_icons_hide_and_stay_hidden_but_pins_and_zone_text_stay():
 
 def test_layout_version_bump_leaves_frames_alone():
     version = re.search(r"version = (\d+),\n\t\tplayer", (ADDON / "Layout.lua").read_text())[1]
-    before = f"ForeverKitChar = {{ version = 1, seeded = {{ EllesmereUIUnitFrames = {version}, EllesmereUIRaidFrames = {version}, EllesmereUIMinimap = 1 }} }}"
+    before = f"ForeverKitChar = {{ version = 1, seeded = {{ EllesmereUIUnitFrames = {version}, EllesmereUIRaidFrames = {version}, EllesmereUIMinimap = 1, EllesmereUIActionBars = 1 }} }}"
     assert login(before=before).eval("EllesmereUIDB") is None
 
 

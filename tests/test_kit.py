@@ -316,6 +316,27 @@ def test_layout_version_bump_leaves_frames_alone():
     assert login(before=before).eval("EllesmereUIDB") is None
 
 
+def test_cpu_report_ranks_loaded_addons_and_saves_them():
+    before = """
+    Enum = Enum or {}
+    C_AddOns = {
+      GetNumAddOns = function() return 3 end,
+      GetAddOnInfo = function(i) return ({ "Light", "Heavy", "Unloaded" })[i] end,
+      IsAddOnLoaded = function(i) return i < 3 end,
+    }
+    C_AddOnProfiler = { GetAddOnMetric = function(name, metric)
+      return ({ Light = { 0.01, 1 }, Heavy = { 2.5, 40 } })[name][metric] end }
+    """
+    lua = login(before=before)
+    lua.execute("Enum.AddOnProfilerMetric = { SessionAverageTime = 1, PeakTime = 2 }")
+    lua.execute('SlashCmdList.FOREVERKIT("cpu")')
+    e = lua.eval
+    assert e("#ForeverKitChar.cpu") == 2
+    assert e("ForeverKitChar.cpu[1].name") == "Heavy" and e("ForeverKitChar.cpu[1].peak") == 40
+    assert "Heavy" in e("messages[#messages]") or "Light" in e("messages[#messages]")
+    assert e("ForeverKitChar.version") is not None, "the report leaves the layout alone"
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_")]
     for name, test in tests:

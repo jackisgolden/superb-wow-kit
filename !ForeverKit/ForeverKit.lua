@@ -376,8 +376,39 @@ frame:SetScript("OnEvent", function(_, event, name)
 	end
 end)
 
+-- The client times every addon. This ranks them by the milliseconds each adds
+-- to a frame, and saves the list with the character so it can be read later.
+local function cpuReport()
+	if not (C_AddOnProfiler and Enum.AddOnProfilerMetric) then
+		say("this client does not time addons.")
+		return
+	end
+	local metric, rows = Enum.AddOnProfilerMetric, {}
+	for index = 1, C_AddOns.GetNumAddOns() do
+		local name = C_AddOns.GetAddOnInfo(index)
+		if C_AddOns.IsAddOnLoaded(index) then
+			rows[#rows + 1] = {
+				name = name,
+				average = C_AddOnProfiler.GetAddOnMetric(name, metric.SessionAverageTime) or 0,
+				peak = C_AddOnProfiler.GetAddOnMetric(name, metric.PeakTime) or 0,
+			}
+		end
+	end
+	table.sort(rows, function(a, b) return a.average > b.average end)
+	ForeverKitChar.cpu = rows
+	say("milliseconds per frame, average and worst, this session:")
+	for index = 1, math.min(10, #rows) do
+		local row = rows[index]
+		print(("  %.3f  %.1f  %s"):format(row.average, row.peak, row.name))
+	end
+end
+
 SLASH_FOREVERKIT1 = "/forever"
-SlashCmdList.FOREVERKIT = function()
+SlashCmdList.FOREVERKIT = function(argument)
+	if argument == "cpu" then
+		cpuReport()
+		return
+	end
 	ForeverKitChar.version = nil
 	ReloadUI()
 end

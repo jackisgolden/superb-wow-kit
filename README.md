@@ -54,6 +54,8 @@ The minimap has no addon icons. Type these in chat to open each addon's settings
 
 To reset your layout, or fit it to a new monitor, type `/forever` in chat.
 
+If the game stutters, type `/forever cpu`. It lists the addons costing the most time per frame.
+
 ---
 
 **Your addons**

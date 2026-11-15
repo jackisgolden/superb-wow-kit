@@ -1,0 +1,25 @@
+name: audit
+on:
+  push:
+  schedule:
+    - cron: "0 9 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python tests/audit.py --pin
+      - name: Commit refreshed pins
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git diff --quiet addons.tsv && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Refresh pins" addons.tsv
+          git push

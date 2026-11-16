@@ -1,6 +1,6 @@
 -- Forever Kit. The ! in the folder name loads this before other addons, so a
--- character's layout is in place before EllesmereUI and Questie read their
--- settings.
+-- character's layout is in place before EllesmereUI, Questie and Follow The
+-- Arrow read their settings.
 --
 -- Each part of Layout.lua is applied once per character, on its own version,
 -- and /forever applies them all again. Config.lua and Personal.lua hold binds,
@@ -16,7 +16,9 @@ end
 
 local function seedQuestie()
 	QuestieConfig = QuestieConfig or {}
-	ensure(ensure(QuestieConfig, "profiles"), "Default").TrackerLocation = Layout.questie.location
+	local profile = ensure(ensure(QuestieConfig, "profiles"), "Default")
+	profile.TrackerLocation = Layout.questie.location
+	for key, value in pairs(Layout.questie.settings) do profile[key] = value end
 end
 
 -- EllesmereUI fills missing keys from its defaults, so a partial profile keeps
@@ -34,6 +36,19 @@ local function merge(target, source)
 			target[key] = value
 		end
 	end
+end
+
+local function seedGuide()
+	FTADB = FTADB or {}
+	merge(ensure(ensure(FTADB, "profile"), "ui"), Layout.guide.ui)
+end
+
+local function seedBags()
+	EllesmereUIDB = EllesmereUIDB or {}
+	local spec = Layout.bags
+	merge(frameProfile(EllesmereUIDB, "EllesmereUIBags"), {
+		bagAnchorCorner = spec.bagAnchorCorner, bagsPosition = spec.bagsPosition,
+	})
 end
 
 local function seedUnitFrames()
@@ -56,9 +71,13 @@ local function seedActionBars()
 	EllesmereUIDB = EllesmereUIDB or {}
 	EllesmereUIDB._capturedOnce_EAB = true
 	local spec = Layout.actionBars
-	merge(frameProfile(EllesmereUIDB, "EllesmereUIActionBars"), {
-		useBlizzardDataBars = false, bars = spec.bars, barPositions = spec.positions,
-	})
+	local profile = frameProfile(EllesmereUIDB, "EllesmereUIActionBars")
+	merge(profile, { useBlizzardDataBars = false, bars = spec.bars, barPositions = spec.positions })
+	-- Values EllesmereUI keeps beside a bar's settings, which outrank them.
+	for name in pairs(spec.bars) do
+		local bar = profile.bars[name]
+		bar.overrideNumIcons, bar.overrideNumRows, bar._savedBarAlpha = nil, nil, nil
+	end
 end
 
 -- A set position stops EllesmereUI from capturing the stock minimap's spot.
@@ -91,9 +110,32 @@ local function editableLayout(info)
 	return layout
 end
 
-local function applyPartyFrames()
+-- A system this client lacks is skipped.
+local function placeSystems(layout)
+	for _, spec in ipairs(Layout.editMode) do
+		local id = Enum.EditModeSystem[spec.system]
+		local index = spec.index and (Enum[spec.indexNames] or {})[spec.index]
+		local names = spec.settingNames and Enum[spec.settingNames] or {}
+		for _, system in ipairs(layout.systems) do
+			if id and system.system == id and (not spec.index or system.systemIndex == index) then
+				system.isInDefaultPosition = false
+				system.anchorInfo = {
+					point = spec.point, relativeTo = "UIParent", relativePoint = spec.point,
+					offsetX = spec.x, offsetY = spec.y,
+				}
+				for name, value in pairs(spec.settings or {}) do
+					local setting = names[name] and findSetting(system, names[name])
+					if setting then setting.value = value end
+				end
+			end
+		end
+	end
+end
+
+local function applyEditMode()
 	local info = C_EditMode.GetLayouts()
 	local layout = editableLayout(info)
+	placeSystems(layout)
 	for _, system in ipairs(layout.systems) do
 		if system.system == Enum.EditModeSystem.UnitFrame
 			and system.systemIndex == Enum.EditModeUnitFrameSystemIndices.Party then
@@ -226,6 +268,8 @@ local onceSeeders = {
 	EllesmereUIRaidFrames = { run = seedPartyFrames, version = Layout.frames.version },
 	EllesmereUIMinimap = { run = seedMinimap, version = Layout.minimap.version },
 	Questie = { run = seedQuestie, version = Layout.questie.version },
+	FollowTheArrow = { run = seedGuide, version = Layout.guide.version },
+	EllesmereUIBags = { run = seedBags, version = Layout.bags.version },
 }
 local fresh = false
 local frame = CreateFrame("Frame")
@@ -255,7 +299,7 @@ end
 local function onLayouts()
 	if not ForeverKitChar.partyPending or InCombatLockdown() then return end
 	ForeverKitChar.partyPending = nil
-	local ok = pcall(applyPartyFrames)
+	local ok = pcall(applyEditMode)
 	if not ok then
 		say("party frames need one click: Esc, Edit Mode, then pick Raid-Style Party Frames.")
 	end

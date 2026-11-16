@@ -17,6 +17,6 @@ Every class fits the same buttons, so a new character never means new habits. Ke
 | Alt + 5 | Remove a curse, poison, or disease |
 | Alt + 6 | Taunt or threat, if your class has one |
 
-Keep rarely used things on the top row, with Ctrl + Shift. Buffs, stances, and mounts live there. Food, water, and your Hearthstone go on the faded bar, on Alt + Q, E, R, F, C and V.
+Keep rarely used things on the top row, with Ctrl + Shift. Buffs, stances, and mounts live there. Food, water, and your Hearthstone go on the faded block in the bottom right, on Alt + Q, E, R, F, C and V.
 
 Leave a key empty until your class learns something for it. At level 60 you will still be using the same keys.

@@ -32,11 +32,13 @@ Three rows of 12 buttons sit along the bottom of your screen. Your normal WoW ke
 
 Drag spells from your spellbook onto the buttons. Put what you press most on the bottom row, and things you use less on the rows above.
 
-A faded bar on the right edge is for things like your Hearthstone and food. It lights up when you hover over it, and its first six buttons are Alt + Q, E, R, F, C and V.
+A faded block of 12 buttons in the bottom right is for things like your Hearthstone and food. It lights up when you hover over it, and its first six buttons are Alt + Q, E, R, F, C and V.
 
 Enemies show health bars above their heads, and your gear repairs itself when you open a repair vendor.
 
-Your health card and your party's cards sit near the middle of the screen, with your party stacked above and to the left.
+Your health card sits above the left third of the bars and your target above the right third, with your party stacked above your own card.
+
+Chat is in the bottom left, the guide in the top left, and the minimap in the top right with your quests below it. The middle of the screen stays empty.
 
 Your spellbook has a tab listing every spell you can learn and what it costs.
 

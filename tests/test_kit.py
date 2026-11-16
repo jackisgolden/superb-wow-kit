@@ -157,7 +157,7 @@ def test_existing_custom_layout_is_edited_in_place():
 def test_edit_mode_failure_tells_the_player_and_breaks_nothing():
     lua = login(before="breakEditMode = true")
     assert any("Edit Mode" in m for m in lua.globals().messages.values())
-    assert lua.eval("ForeverKitChar.version") == 3
+    assert lua.eval("ForeverKitChar.version") == 4
 
 
 def test_combat_defers_party_frames():
@@ -169,7 +169,7 @@ def test_layout_upgrade_reapplies_but_same_version_does_not():
     e = login(before='ForeverKitChar = { version = 1 }').eval
     assert e("saves") == 1
     settings = e("ForeverKitChar.settings")
-    e = login(before=f"ForeverKitChar = {{ version = 3, settings = [==[{settings}]==], defaultsRestored = true }}").eval
+    e = login(before=f"ForeverKitChar = {{ version = 4, settings = [==[{settings}]==], defaultsRestored = true }}").eval
     assert e("saves") == 0 and e("saved") == 0
 
 
@@ -181,7 +181,7 @@ def test_seeding_keeps_other_settings():
 
 def test_personal_overrides_apply_without_touching_layout():
     personal = 'ForeverKitConfig.binds.BUTTON4 = "TOGGLEAUTORUN"; ForeverKitConfig.binds["ALT-1"] = false; ForeverKitConfig.cvars.cameraFov = 75'
-    e = login(before='ForeverKitChar = { version = 3, settings = "old", defaultsRestored = true }', personal=personal).eval
+    e = login(before='ForeverKitChar = { version = 4, settings = "old", defaultsRestored = true }', personal=personal).eval
     assert e("saved") == 1 and e("binds.BUTTON4") == "TOGGLEAUTORUN"
     assert e('binds["ALT-1"]') is None and e("cvars.cameraFov") == 75 and e("saves") == 0
 
@@ -225,7 +225,7 @@ def test_friends_with_no_macros_touch_no_buttons():
 def test_macros_apply_once_and_update_in_place():
     lua = login(personal=MACROS)
     done = lua.eval("ForeverKitChar.actions")
-    before = f'ForeverKitChar = {{ version = 3, settings = "old", actions = [==[{done}]==] }}'
+    before = f'ForeverKitChar = {{ version = 4, settings = "old", actions = [==[{done}]==] }}'
     assert login(before=before, personal=MACROS).eval("#macroList") == 0
     edited = MACROS.replace("Holy Light", "Flash of Light")
     e = login(before='macroList = { { name = "Heal", body = "old" } }', personal=edited).eval
@@ -271,16 +271,16 @@ def test_minimap_icons_hide_and_stay_hidden_but_pins_and_zone_text_stay():
 
 def test_layout_version_bump_leaves_frames_alone():
     version = re.search(r"version = (\d+),\n\t\tplayer", (ADDON / "Layout.lua").read_text())[1]
-    before = f"ForeverKitChar = {{ version = 3, seeded = {{ EllesmereUIUnitFrames = {version}, EllesmereUIRaidFrames = {version}, EllesmereUIMinimap = 2, EllesmereUIActionBars = 2, EllesmereUIBags = 1 }} }}"
+    before = f"ForeverKitChar = {{ version = 4, seeded = {{ EllesmereUIUnitFrames = {version}, EllesmereUIRaidFrames = {version}, EllesmereUIMinimap = 3, EllesmereUIActionBars = 2, EllesmereUIBags = 1 }} }}"
     assert login(before=before).eval("EllesmereUIDB") is None
 
 
-def test_minimap_is_one_rail_wide_in_the_top_right_with_the_tracker_below():
+def test_minimap_is_seven_modules_wide_in_the_top_right_with_the_tracker_below():
     e = login().eval
     m = 'EllesmereUIDB.profiles.Default.addons.EllesmereUIMinimap.minimap'
-    assert e(f"{m}.mapSize") == 374 and e(f"{m}._capturedOnce") is True
+    assert e(f"{m}.mapSize") == 327 and e(f"{m}._capturedOnce") is True
     assert e(f"{m}.position.x") == e(f"{m}.position.y") == -24
-    assert abs(e("QuestieConfig.profiles.Default.trackerWidthRatio") * 2133 - 374) < 1e-6
+    assert e("QuestieConfig.profiles.Default.trackerWidthRatio") == 0.2
     assert e(f"{m}.position.point") == "TOPRIGHT" and e(f"{m}.position.relPoint") == "TOPRIGHT"
     tracker = "QuestieConfig.profiles.Default.TrackerLocation"
     assert e(f"{tracker}[5]") < e(f"{m}.position.y") - e(f"{m}.mapSize"), "tracker starts below the map"
@@ -289,11 +289,11 @@ def test_minimap_is_one_rail_wide_in_the_top_right_with_the_tracker_below():
 
 
 def test_minimap_and_tracker_move_once_for_characters_already_set_up():
-    before = """ForeverKitChar = { version = 3, seeded = {} }
+    before = """ForeverKitChar = { version = 4, seeded = {} }
       QuestieConfig = { profiles = { Default = { TrackerLocation = { "TOPRIGHT", "UIParent", "TOPRIGHT", -14, -310 } } } }"""
     e = login(before=before).eval
-    assert e("QuestieConfig.profiles.Default.TrackerLocation[5]") < -398
-    assert e("ForeverKitChar.seeded.EllesmereUIMinimap") == 2 and e("ForeverKitChar.seeded.Questie") == 2
+    assert e("QuestieConfig.profiles.Default.TrackerLocation[5]") < -351
+    assert e("ForeverKitChar.seeded.EllesmereUIMinimap") == 3 and e("ForeverKitChar.seeded.Questie") == 3
 
 
 def test_cpu_report_ranks_loaded_addons_and_saves_them():
@@ -321,10 +321,10 @@ def test_rails_chat_guide_and_bags_sit_on_the_grid():
     e = login().eval
     chat = "layoutInfo.layouts[1].systems[2]"
     assert e(f"{chat}.anchorInfo.offsetX") == 52 and e(f"{chat}.anchorInfo.offsetY") == 56
-    assert [e(f"{chat}.settings[{i}].value") for i in range(1, 5)] == [3, 46, 2, 12]
+    assert [e(f"{chat}.settings[{i}].value") for i in range(1, 5)] == [5, 15, 2, 12]
     assert e(f"{chat}.anchorInfo.offsetY") + 212 == 268, "chat rises to the top of the cards"
     buffs, debuffs = "layoutInfo.layouts[1].systems[3].anchorInfo", "layoutInfo.layouts[1].systems[4].anchorInfo"
-    assert e(f"{buffs}.offsetX") == -(24 + 374 + 24) and e(f"{buffs}.offsetY") == -24
+    assert e(f"{buffs}.offsetX") == -(24 + 327 + 24) and e(f"{buffs}.offsetY") == -24
     assert e(f"{debuffs}.offsetY") < e(f"{buffs}.offsetY") and e("saves") == 1
     assert e("FTADB.profile.ui.main.w") == 374 and e("FTADB.profile.ui.main.x") == 24
     bags = "EllesmereUIDB.profiles.Default.addons.EllesmereUIBags"

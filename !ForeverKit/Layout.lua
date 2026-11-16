@@ -2,7 +2,8 @@
 --
 -- One module builds the page: an action button plus its gap. The screen is a
 -- three by three grid. The middle column holds the action bars, twelve modules
--- wide, and each side column holds a rail eight modules wide. Nothing sits
+-- wide, and each side column holds a rail eight modules wide, with the
+-- minimap at seven and chat at eleven. Nothing sits
 -- closer to a screen edge than one margin, and the middle of the screen stays
 -- empty.
 --
@@ -38,6 +39,7 @@ local edgeInset = math.max(0, (GetScreenWidth() - GetScreenHeight() * 16 / 9) / 
 local EDGE = MARGIN + edgeInset
 
 local RAIL = span(8)
+local MAP = span(7)
 local THIRD = span(4)
 local BLOCK_HEIGHT = span(3)
 
@@ -61,12 +63,12 @@ local PARTY_HEIGHT = 30
 local METER_BOTTOM = BLOCK_TOP + SPACE
 local RAIL_STACK_TOP = METER_BOTTOM + BLOCK_HEIGHT + SPACE
 
-local TRACKER_TOP = MARGIN + RAIL + 2 * SPACE
+local TRACKER_TOP = MARGIN + MAP + 2 * SPACE
 local TRACKER_PAD = 13       -- Questie's own padding right of its text
 
 local CHAT_BUTTONS = 28      -- the column of chat buttons left of the chat frame
 local CHAT_INPUT = 32        -- the typing box under the chat frame
-local CHAT_WIDTH = RAIL - CHAT_BUTTONS
+local CHAT_WIDTH = span(11)
 local CHAT_BOTTOM = MARGIN + CHAT_INPUT
 local CHAT_HEIGHT = CARD_TOP - CHAT_BOTTOM
 
@@ -94,7 +96,7 @@ local function card(side)
 end
 
 ForeverKitLayout = {
-	version = 3,
+	version = 4,
 	profile = "Forever Kit",
 
 	-- EllesmereUI action bars. Bar2, Bar3 and Bar5 are the game's bottom left,
@@ -127,18 +129,17 @@ ForeverKitLayout = {
 	-- stays on its chat command.
 	minimapIcons = { "^LibDBIcon10_", "MinimapButton$", "MinimapBadge$" },
 
-	-- The EllesmereUI minimap, by its top right corner, one rail wide. Its
-	-- size slider runs from 100 to 600, and 198 is the stock size.
-	minimap = { version = 2, size = RAIL, x = -EDGE, y = -MARGIN },
+	-- The EllesmereUI minimap, by its top right corner, seven modules wide.
+	-- Its size slider runs from 100 to 600, and 198 is the stock size.
+	minimap = { version = 3, size = MAP, x = -EDGE, y = -MARGIN },
 
-	-- The quest tracker hangs below the minimap, no wider than the rail, and
-	-- stops above the bags.
+	-- The quest tracker hangs below the minimap at Questie's own size limits.
 	questie = {
-		version = 2,
+		version = 3,
 		location = { "TOPRIGHT", "UIParent", "TOPRIGHT", TRACKER_PAD - EDGE, -TRACKER_TOP },
 		settings = {
-			trackerWidthRatio = RAIL / GetScreenWidth(),
-			trackerHeightRatio = (GetScreenHeight() - TRACKER_TOP - RAIL_STACK_TOP - SPACE) / GetScreenHeight(),
+			trackerWidthRatio = 0.2,
+			trackerHeightRatio = 0.5,
 		},
 	},
 
@@ -174,11 +175,11 @@ ForeverKitLayout = {
 		},
 		{
 			system = "AuraFrame", indexNames = "EditModeAuraFrameSystemIndices", index = "BuffFrame",
-			point = "TOPRIGHT", x = -EDGE - RAIL - MARGIN, y = -MARGIN,
+			point = "TOPRIGHT", x = -EDGE - MAP - MARGIN, y = -MARGIN,
 		},
 		{
 			system = "AuraFrame", indexNames = "EditModeAuraFrameSystemIndices", index = "DebuffFrame",
-			point = "TOPRIGHT", x = -EDGE - RAIL - MARGIN, y = -MARGIN - 3 * ROW,
+			point = "TOPRIGHT", x = -EDGE - MAP - MARGIN, y = -MARGIN - 3 * ROW,
 		},
 		{ system = "DamageMeter", point = "BOTTOMRIGHT", x = -EDGE, y = METER_BOTTOM },
 		{ system = "HudTooltip", point = "BOTTOMRIGHT", x = -EDGE, y = RAIL_STACK_TOP },

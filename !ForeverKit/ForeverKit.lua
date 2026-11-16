@@ -132,6 +132,7 @@ local function placeSystems(layout)
 	end
 end
 
+-- One save places everything. A system or setting this client lacks is left alone.
 local function applyEditMode()
 	local info = C_EditMode.GetLayouts()
 	local layout = editableLayout(info)
@@ -139,18 +140,17 @@ local function applyEditMode()
 	for _, system in ipairs(layout.systems) do
 		if system.system == Enum.EditModeSystem.UnitFrame
 			and system.systemIndex == Enum.EditModeUnitFrameSystemIndices.Party then
-			findSetting(system, Enum.EditModeUnitFrameSetting.UseRaidStylePartyFrames).value = 1
+			local raidStyle = findSetting(system, Enum.EditModeUnitFrameSetting.UseRaidStylePartyFrames)
+			if raidStyle then raidStyle.value = 1 end
 			local spec = Layout.party
 			system.isInDefaultPosition = false
 			system.anchorInfo = {
 				point = spec.point, relativeTo = "UIParent", relativePoint = spec.relativePoint,
 				offsetX = spec.x, offsetY = spec.y,
 			}
-			C_EditMode.SaveLayouts(info)
-			return
 		end
 	end
-	error("party frame system not found")
+	C_EditMode.SaveLayouts(info)
 end
 
 local function signature()
@@ -301,7 +301,7 @@ local function onLayouts()
 	ForeverKitChar.partyPending = nil
 	local ok = pcall(applyEditMode)
 	if not ok then
-		say("party frames need one click: Esc, Edit Mode, then pick Raid-Style Party Frames.")
+		say("chat, buffs and the damage meter need placing by hand: Esc, Edit Mode.")
 	end
 end
 

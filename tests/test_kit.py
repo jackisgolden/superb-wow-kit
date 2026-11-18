@@ -56,7 +56,9 @@ Minimap = { GetChildren = function() return (table.unpack or unpack)(mapChildren
 function InCombatLockdown() return inCombat end
 SlashCmdList = {}
 Enum = {
-  EditModeSystem = { UnitFrame = 3, ChatFrame = 8, AuraFrame = 6 },
+  EditModeSystem = { UnitFrame = 3, ChatFrame = 8, AuraFrame = 6, SwingTimer = 30 },
+  EditModeSwingTimerSystemIndices = { MainHand = 1, OffHand = 2, Ranged = 3 },
+  EditModeSwingTimerSetting = { Scale = 0, Opacity = 1, Visibility = 2, Width = 3, Height = 4, ShowBarTitle = 5, ShowTime = 6 },
   EditModeAuraFrameSystemIndices = { BuffFrame = 1, DebuffFrame = 2 },
   EditModeChatFrameSetting = { WidthHundreds = 0, WidthTensAndOnes = 1, HeightHundreds = 2, HeightTensAndOnes = 3 },
   EditModeUnitFrameSystemIndices = { Party = 5 },
@@ -66,7 +68,9 @@ Enum = {
 local function preset()
   return { layoutName = "Modern", systems = { { system = 3, systemIndex = 5, settings = { { setting = 9, value = 0 } } },
     { system = 8, settings = { { setting = 0, value = 4 }, { setting = 1, value = 30 }, { setting = 2, value = 1 }, { setting = 3, value = 70 } } },
-    { system = 6, systemIndex = 1, settings = {} }, { system = 6, systemIndex = 2, settings = {} } } }
+    { system = 6, systemIndex = 1, settings = {} }, { system = 6, systemIndex = 2, settings = {} },
+    { system = 30, systemIndex = 1, settings = { { setting = 0, value = 5 }, { setting = 2, value = 0 }, { setting = 3, value = 213 },
+      { setting = 4, value = 15 }, { setting = 5, value = 1 }, { setting = 6, value = 1 } } } } }
 end
 EditModePresetLayoutManager = { GetCopyOfPresetLayouts = function() return { preset(), preset() } end }
 layoutInfo = { activeLayout = 1, layouts = {} }
@@ -158,7 +162,7 @@ def test_existing_custom_layout_is_edited_in_place():
 def test_edit_mode_failure_tells_the_player_and_breaks_nothing():
     lua = login(before="breakEditMode = true")
     assert any("Edit Mode" in m for m in lua.globals().messages.values())
-    assert lua.eval("ForeverKitChar.version") == 4
+    assert lua.eval("ForeverKitChar.version") == 5
 
 
 def test_combat_defers_party_frames():
@@ -170,7 +174,7 @@ def test_layout_upgrade_reapplies_but_same_version_does_not():
     e = login(before='ForeverKitChar = { version = 1 }').eval
     assert e("saves") == 1
     settings = e("ForeverKitChar.settings")
-    e = login(before=f"ForeverKitChar = {{ version = 4, settings = [==[{settings}]==], defaultsRestored = true }}").eval
+    e = login(before=f"ForeverKitChar = {{ version = 5, settings = [==[{settings}]==], defaultsRestored = true }}").eval
     assert e("saves") == 0 and e("saved") == 0
 
 
@@ -182,7 +186,7 @@ def test_seeding_keeps_other_settings():
 
 def test_personal_overrides_apply_without_touching_layout():
     personal = 'ForeverKitConfig.binds.BUTTON4 = "TOGGLEAUTORUN"; ForeverKitConfig.binds["ALT-1"] = false; ForeverKitConfig.cvars.cameraFov = 75'
-    e = login(before='ForeverKitChar = { version = 4, settings = "old", defaultsRestored = true }', personal=personal).eval
+    e = login(before='ForeverKitChar = { version = 5, settings = "old", defaultsRestored = true }', personal=personal).eval
     assert e("saved") == 1 and e("binds.BUTTON4") == "TOGGLEAUTORUN"
     assert e('binds["ALT-1"]') is None and e("cvars.cameraFov") == 75 and e("saves") == 0
 
@@ -226,7 +230,7 @@ def test_friends_with_no_macros_touch_no_buttons():
 def test_macros_apply_once_and_update_in_place():
     lua = login(personal=MACROS)
     done = lua.eval("ForeverKitChar.actions")
-    before = f'ForeverKitChar = {{ version = 4, settings = "old", actions = [==[{done}]==] }}'
+    before = f'ForeverKitChar = {{ version = 5, settings = "old", actions = [==[{done}]==] }}'
     assert login(before=before, personal=MACROS).eval("#macroList") == 0
     edited = MACROS.replace("Holy Light", "Flash of Light")
     e = login(before='macroList = { { name = "Heal", body = "old" } }', personal=edited).eval
@@ -272,7 +276,7 @@ def test_minimap_icons_hide_and_stay_hidden_but_pins_and_zone_text_stay():
 
 def test_layout_version_bump_leaves_frames_alone():
     version = re.search(r"version = (\d+),\n\t\tplayer", (ADDON / "Layout.lua").read_text())[1]
-    before = f"ForeverKitChar = {{ version = 4, seeded = {{ EllesmereUIUnitFrames = {version}, EllesmereUIRaidFrames = {version}, EllesmereUIMinimap = 3, EllesmereUIActionBars = 2, EllesmereUIBags = 1 }} }}"
+    before = f"ForeverKitChar = {{ version = 5, seeded = {{ EllesmereUIUnitFrames = {version}, EllesmereUIRaidFrames = {version}, EllesmereUIMinimap = 3, EllesmereUIActionBars = 2, EllesmereUIBags = 1 }} }}"
     assert login(before=before).eval("EllesmereUIDB.profiles") is None
 
 
@@ -287,6 +291,19 @@ def test_escape_menu_names_the_install_and_how_to_update():
     e = login(before=MENU, installed='ForeverKitInstall = { commit = "abc", date = "2026-11-17" }').eval
     assert e("menuText") == "Superb WoW Kit, installed 2026-11-17. To update, close WoW and run SuperbWoWKit.exe."
     assert login(before=MENU).eval("menuText") == "Superb WoW Kit. To update, close WoW and run SuperbWoWKit.exe."
+
+
+def test_swing_timer_hangs_under_the_player_health_bar_in_combat():
+    e = login().eval
+    unit = 'EllesmereUIDB.profiles.Default.addons.EllesmereUIUnitFrames'
+    swing = "layoutInfo.layouts[1].systems[5]"
+    setting = lambda n: e(f"{swing}.settings[{n}].value")
+    assert e(f"{swing}.anchorInfo.point") == "BOTTOMLEFT" and e(f"{swing}.anchorInfo.relativePoint") == "BOTTOM"
+    assert e(f"{swing}.anchorInfo.offsetX") == e(f"{unit}.positions.player.x") + e(f"{unit}.player.healthHeight") + e(f"{unit}.player.powerHeight")
+    assert e(f"{swing}.anchorInfo.offsetY") + 9 + 2 == e(f"{unit}.positions.player.y"), "two pixels under the card"
+    assert setting(1) == 1, "60% scale"
+    assert round((213 + setting(3)) * 0.6) == e(f"{unit}.player.frameWidth"), "as wide as the health bar"
+    assert setting(4) == 0 and setting(2) == 1 and setting(5) == 0 and setting(6) == 0, "slim, in combat, no text"
 
 
 def test_ellesmereui_never_asks_for_modules_or_a_look():
@@ -309,7 +326,7 @@ def test_minimap_is_seven_modules_wide_in_the_top_right_with_the_tracker_below()
 
 
 def test_minimap_and_tracker_move_once_for_characters_already_set_up():
-    before = """ForeverKitChar = { version = 4, seeded = {} }
+    before = """ForeverKitChar = { version = 5, seeded = {} }
       QuestieConfig = { profiles = { Default = { TrackerLocation = { "TOPRIGHT", "UIParent", "TOPRIGHT", -14, -310 } } } }"""
     e = login(before=before).eval
     assert e("QuestieConfig.profiles.Default.TrackerLocation[5]") < -351
@@ -341,8 +358,8 @@ def test_rails_chat_guide_and_bags_sit_on_the_grid():
     e = login().eval
     chat = "layoutInfo.layouts[1].systems[2]"
     assert e(f"{chat}.anchorInfo.offsetX") == 52 and e(f"{chat}.anchorInfo.offsetY") == 56
-    assert [e(f"{chat}.settings[{i}].value") for i in range(1, 5)] == [5, 15, 2, 12]
-    assert e(f"{chat}.anchorInfo.offsetY") + 212 == 268, "chat rises to the top of the cards"
+    assert [e(f"{chat}.settings[{i}].value") for i in range(1, 5)] == [5, 15, 2, 34]
+    assert e(f"{chat}.anchorInfo.offsetY") + 234 == 290, "chat rises to the top of the cards"
     buffs, debuffs = "layoutInfo.layouts[1].systems[3].anchorInfo", "layoutInfo.layouts[1].systems[4].anchorInfo"
     assert e(f"{buffs}.offsetX") == -(24 + 327 + 24) and e(f"{buffs}.offsetY") == -24
     assert e(f"{debuffs}.offsetY") < e(f"{buffs}.offsetY") and e("saves") == 1

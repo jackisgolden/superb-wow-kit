@@ -119,7 +119,7 @@ local function placeSystems(layout)
 			if id and system.system == id and (not spec.index or system.systemIndex == index) then
 				system.isInDefaultPosition = false
 				system.anchorInfo = {
-					point = spec.point, relativeTo = "UIParent", relativePoint = spec.point,
+					point = spec.point, relativeTo = "UIParent", relativePoint = spec.relPoint or spec.point,
 					offsetX = spec.x, offsetY = spec.y,
 				}
 				for name, value in pairs(spec.settings or {}) do

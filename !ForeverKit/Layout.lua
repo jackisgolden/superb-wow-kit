@@ -52,7 +52,15 @@ local BLOCK_TOP = BLOCK_BOTTOM + BLOCK_HEIGHT
 local CARD_HEALTH = 28
 local CARD_POWER = 8
 local CARD_HEIGHT = CARD_HEALTH + CARD_POWER
-local CARD_BOTTOM = BLOCK_TOP + ROW + SPACE      -- clears the stance bar and the cast bar
+
+-- The swing timers hang under the player card's health bar, as wide as it:
+-- main hand first, then off hand or ranged. The game's bar is at least 213
+-- wide and 15 tall, so it draws at 60% scale.
+local SWING_SCALE = 0.6
+local SWING_HEIGHT = 15 * SWING_SCALE
+local SWING_WIDTH = THIRD - CARD_HEIGHT
+local SWING_BOTTOM = BLOCK_TOP + ROW + SPACE    -- clears the stance bar and the cast bar
+local CARD_BOTTOM = SWING_BOTTOM + 2 * (SWING_HEIGHT + GAP)
 local CARD_TOP = CARD_BOTTOM + CARD_HEIGHT
 local CARD_OPACITY = 60
 
@@ -84,6 +92,19 @@ local function corner(x, y)
 	return { point = "BOTTOMLEFT", relPoint = "BOTTOM", x = x, y = y }
 end
 
+local function swing(index, y)
+	return {
+		system = "SwingTimer", indexNames = "EditModeSwingTimerSystemIndices", index = index,
+		point = "BOTTOMLEFT", relPoint = "BOTTOM", x = BAR_LEFT + CARD_HEIGHT, y = y,
+		settingNames = "EditModeSwingTimerSetting",
+		settings = {
+			Scale = (SWING_SCALE * 100 - 50) / 10, Visibility = 1,     -- in combat
+			Width = math.floor(SWING_WIDTH / SWING_SCALE + 0.5) - 213, Height = 0,
+			ShowBarTitle = 0, ShowTime = 0,
+		},
+	}
+end
+
 local HEALTH_GREEN = { r = 37 / 255, g = 193 / 255, b = 29 / 255 }
 
 -- A card's portrait is a square as tall as the card, attached outside its width.
@@ -96,7 +117,7 @@ local function card(side)
 end
 
 ForeverKitLayout = {
-	version = 4,
+	version = 5,
 	profile = "Forever Kit",
 
 	-- EllesmereUI action bars. Bar2, Bar3 and Bar5 are the game's bottom left,
@@ -182,6 +203,9 @@ ForeverKitLayout = {
 			point = "TOPRIGHT", x = -EDGE - MAP - MARGIN, y = -MARGIN - 3 * ROW,
 		},
 		{ system = "DamageMeter", point = "BOTTOMRIGHT", x = -EDGE, y = METER_BOTTOM },
+		swing("MainHand", SWING_BOTTOM + SWING_HEIGHT + GAP),
+		swing("OffHand", SWING_BOTTOM),
+		swing("Ranged", SWING_BOTTOM),
 		{ system = "HudTooltip", point = "BOTTOMRIGHT", x = -EDGE, y = RAIL_STACK_TOP },
 	},
 
@@ -191,7 +215,7 @@ ForeverKitLayout = {
 	-- EllesmereUI cards take the outer thirds of the bar block, and the party
 	-- stacks up from the player card at the same width.
 	frames = {
-		version = 5,
+		version = 6,
 		player = card("left"),
 		playerHealth = { healthClassColored = false, customFillColor = HEALTH_GREEN },
 		target = card("right"),

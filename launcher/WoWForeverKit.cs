@@ -109,17 +109,20 @@ class Kit : Form {
 			? Regex.Match(File.ReadAllText(stamp), "commit = \"(\\w+)\", date = \"([\\d-]+)\"")
 			: Match.Empty;
 		bool present = Directory.Exists(Path.Combine(addons, "!ForeverKit"));
-		string verb = present ? "Update" : "Install";
+		// The install writes its stamp last, so a folder added or removed in
+		// AddOns since then came from something else, such as CurseForge.
+		bool touched = installed.Success && Directory.GetLastWriteTimeUtc(addons) > File.GetLastWriteTimeUtc(stamp);
+		string verb = !present ? "Install" : touched ? "Repair" : "Update";
 
 		if (latest == null)
 			Set(Amber, "Can't reach GitHub", "Retry", Check, false);
-		else if (installed.Success && installed.Groups[1].Value == latest)
+		else if (installed.Success && installed.Groups[1].Value == latest && !touched)
 			Set(Green, "Up to date · installed " + installed.Groups[2].Value, "Close", Close, false);
 		else if (WowRunning()) {
 			Set(Amber, "Close WoW to " + verb.ToLower(), verb, null, true);
 			poll.Start();
 		} else
-			Set(present ? Amber : Dim, present ? "Update available" : "Not installed", verb, Install, true);
+			Set(present ? Amber : Dim, !present ? "Not installed" : touched ? "Addons changed outside the kit" : "Update available", verb, Install, true);
 	}
 
 	async void Install() {

@@ -128,7 +128,7 @@ $retired = 'AtlasBIStooltips', 'AtlasLootClassic', 'BagBrother', 'Bagnon', 'Bagn
     'AtlasLootClassic_PvP', 'Details', 'Details_Compare2', 'Details_DataStorage', 'Details_EncounterDetails',
     'Details_RaidCheck', 'Details_Streamer', 'Details_TinyThreat', 'Details_Vanguard', 'ForeverLayerHop', 'ForeverThreat', 'ForeverVendors', 'GatherMate2', 'GatherMate2_Data',
     'GatherMate2Storage_Dragonflight', 'GatherMate2Storage_Midnight', 'GatherMate2Storage_TheWarWithin',
-    'GuideLime_TUGs_Forever', 'Guidelime', 'Leatrix_Maps', 'Leatrix_Plus', 'Prat-3.0', 'RXPGuides', 'Safeguard', 'SexyMap',
+    'GuideLime_TUGs_Forever', 'Guidelime', 'Leatrix_Maps', 'Leatrix_Plus', 'Prat-3.0', 'QuestieTrace', 'RXPGuides', 'Safeguard', 'SexyMap',
     'WeaponSwingTimer',
     'unitscan', 'unitscanAON', 'unitscanData', 'unitscanIntegrity'
 foreach ($name in $retired) {

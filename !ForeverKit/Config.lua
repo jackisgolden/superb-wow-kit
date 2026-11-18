@@ -1,4 +1,4 @@
--- Forever Kit defaults for everyone. Edit, push, and each player gets the
+-- Superb WoW Kit defaults for everyone. Edit, push, and each player gets the
 -- change the next time they run Install.bat and log in.
 --
 -- binds: key = action. Only keys the game leaves free, so default binds keep

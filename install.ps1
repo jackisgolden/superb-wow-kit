@@ -1,15 +1,16 @@
-# WoW Forever Kit installer, for Windows PowerShell 5.1.
+# Superb WoW Kit installer, for Windows PowerShell 5.1.
 #
-# Run by WoWForeverKit.exe or Install.bat. Downloads the newest Forever build of each addon in addons.tsv from its
+# Run by SuperbWoWKit.exe or Install.bat. Downloads the newest Forever build of each addon in addons.tsv from its
 # author's release, and replaces only those addon folders. It never touches
 # WTF, where settings live. A pinned file in addons.tsv covers a failed lookup.
 # A row's folders column limits which folders of that addon's zip are installed.
 # A row with hold set installs its pinned file and skips the lookup.
 # A github row's file carries its pin's version, and the lookup matches any version.
 #
-# Every kit file comes from one commit of main, and a full install records that
-# commit and the date in !ForeverKit/Installed.lua, which the exe compares with
-# main and the Escape menu shows.
+# Every kit file comes from one commit of main. A full install records that
+# commit, the date and the folders it installed in !ForeverKit/Installed.lua.
+# The exe compares the commit with main, and the next install removes only
+# folders on that list that the kit no longer ships. Nothing else is touched.
 #
 # WOW_KIT_ADDONS overrides the target AddOns folder, and WOW_KIT_SHA the commit.
 
@@ -19,13 +20,13 @@ $ProgressPreference = 'SilentlyContinue'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 Add-Type -AssemblyName System.Windows.Forms
 
-$Agent = 'wow-forever-kit'
+$Agent = 'superb-wow-kit'
 $Sha = $env:WOW_KIT_SHA
 if (-not $Sha) {
     $Sha = Invoke-RestMethod -UseBasicParsing -UserAgent $Agent -Headers @{ Accept = 'application/vnd.github.sha' } `
-        'https://api.github.com/repos/jackisgolden/wow-forever-kit/commits/main'
+        'https://api.github.com/repos/jackisgolden/superb-wow-kit/commits/main'
 }
-$Raw = "https://raw.githubusercontent.com/jackisgolden/wow-forever-kit/$Sha"
+$Raw = "https://raw.githubusercontent.com/jackisgolden/superb-wow-kit/$Sha"
 $Flavor = '1.60.1'
 
 function Say($text, $color = 'Gray') { Write-Host $text -ForegroundColor $color }
@@ -88,7 +89,7 @@ function Get-Url($row) {
 }
 
 Say ''
-Say 'WoW Forever Kit' Cyan
+Say 'Superb WoW Kit' Cyan
 Say ''
 
 $addons = $env:WOW_KIT_ADDONS
@@ -113,28 +114,19 @@ try {
     Set-Content -Path $probe -Value 'ok'
     Remove-Item $probe
 } catch {
-    Say 'Windows would not let me write to that folder. Right-click WoWForeverKit.exe and pick "Run as administrator".' Red
+    Say 'Windows would not let me write to that folder. Right-click SuperbWoWKit.exe and pick "Run as administrator".' Red
     return
 }
 
 $list = (Invoke-WebRequest -UseBasicParsing -UserAgent $Agent "$Raw/addons.tsv").Content
 $rows = $list | ConvertFrom-Csv -Delimiter "`t"
 
-$work = Join-Path $env:TEMP ("wow-forever-kit-" + [guid]::NewGuid())
+$work = Join-Path $env:TEMP ("superb-wow-kit-" + [guid]::NewGuid())
 New-Item -ItemType Directory -Path $work | Out-Null
-$retired = 'AtlasBIStooltips', 'AtlasLootClassic', 'BagBrother', 'Bagnon', 'Bagnon_Bank', 'Bagnon_Config',
-    'Bagnon_GuildBank', 'Bagnon_VoidStorage', 'Bartender4', 'AtlasLootClassic_Collections', 'AtlasLootClassic_Crafting',
-    'AtlasLootClassic_Data', 'AtlasLootClassic_DungeonsAndRaids', 'AtlasLootClassic_Factions', 'AtlasLootClassic_Options',
-    'AtlasLootClassic_PvP', 'Details', 'Details_Compare2', 'Details_DataStorage', 'Details_EncounterDetails',
-    'Details_RaidCheck', 'Details_Streamer', 'Details_TinyThreat', 'Details_Vanguard', 'ForeverLayerHop', 'ForeverThreat', 'ForeverVendors', 'GatherMate2', 'GatherMate2_Data',
-    'GatherMate2Storage_Dragonflight', 'GatherMate2Storage_Midnight', 'GatherMate2Storage_TheWarWithin',
-    'GuideLime_TUGs_Forever', 'Guidelime', 'Leatrix_Maps', 'Leatrix_Plus', 'Prat-3.0', 'QuestieTrace', 'RXPGuides', 'Safeguard', 'SexyMap',
-    'WeaponSwingTimer',
-    'unitscan', 'unitscanAON', 'unitscanData', 'unitscanIntegrity'
-foreach ($name in $retired) {
-    $old = Join-Path $addons $name
-    if (Test-Path $old) { Remove-Item -Recurse -Force $old }
-}
+$stamp = Join-Path $addons '!ForeverKit\Installed.lua'
+$previous = @()
+if ((Test-Path $stamp) -and ((Get-Content -Raw $stamp) -match 'folders = "([^"]*)"')) { $previous = $Matches[1] -split ',' }
+$owned = New-Object System.Collections.ArrayList
 $failed = New-Object System.Collections.ArrayList
 $n = 0
 try {
@@ -152,6 +144,7 @@ try {
                 $dest = Join-Path $addons $dir.Name
                 if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }
                 Copy-Item -Recurse -Path $dir.FullName -Destination $dest
+                [void]$owned.Add($dir.Name)
             }
             Say 'done' Green
         } catch {
@@ -175,7 +168,10 @@ if ($failed.Count) {
     Say ("{0} of {1} installed. These failed: {2}" -f ($rows.Count - $failed.Count), $rows.Count, ($failed -join ', ')) Yellow
     Say 'Run this again. A second try usually gets them.' Yellow
 } else {
+    foreach ($name in $previous | Where-Object { $_ -and $owned -notcontains $_ }) {
+        Remove-Item -Recurse -Force (Join-Path $addons $name) -ErrorAction SilentlyContinue
+    }
     $date = Get-Date -Format 'yyyy-MM-dd'
-    Set-Content -Path (Join-Path $kit 'Installed.lua') -Value "ForeverKitInstall = { commit = `"$Sha`", date = `"$date`" }"
+    Set-Content -Path $stamp -Value "ForeverKitInstall = { commit = `"$Sha`", date = `"$date`", folders = `"$($owned -join ',')`" }"
     Say "All $($rows.Count) installed. Start WoW." Green
 }

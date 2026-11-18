@@ -1,86 +1,79 @@
-# WoW Forever Kit
+# Superb WoW Kit
 
-One file sets up WoW Forever with the addons I use.
+WoW Forever, set up in one click: six addons, a clean layout, and keybinds that work for every class.
 
-**[Download WoWForeverKit.exe](https://github.com/jackisgolden/wow-forever-kit/releases/latest/download/WoWForeverKit.exe)**
+**[Download SuperbWoWKit.exe](https://github.com/jackisgolden/superb-wow-kit/releases/latest/download/SuperbWoWKit.exe)**
 
----
+## Install
 
-**1. Close WoW.**
+1. Close WoW.
+2. Run the file. If Windows says it protected your PC, click More info, then Run anyway.
+3. Click Install.
+4. Start WoW. On the character screen, open AddOns and check they are all ticked.
 
-**2. Download the file above.** Your browser may ask if you want to keep it. Click Keep.
+Your first login sets everything up and says so in chat.
 
-**3. Double-click it.** Windows may show a blue box saying it protected your PC. Click More info, then Run anyway. A small window opens. Click Install, and it lists each addon as it installs, which takes a few seconds.
+## Update
 
-**4. Start WoW.** On the character screen, click AddOns and make sure they are all ticked.
+Open the same file. It says Up to date, or shows an Update button. The Escape menu in game shows when you last installed.
 
-To update, open the same file again. It says Up to date, or Update available with a button. Your settings stay put, and addons I removed from the kit get removed for you. The Escape menu in game shows the date you last installed.
+Your settings stay put.
 
-If your antivirus deletes the exe, use [Install.bat](https://github.com/jackisgolden/wow-forever-kit/releases/latest/download/Install.bat) instead. It does the same install in a black window.
+## Other addons
 
----
+Use CurseForge, WowUp, or a zip, same as always. The kit only touches the folders it installed.
 
-**What you get**
+To keep the six addons without the layout, untick Superb WoW Kit in the AddOns list.
 
-Your first login sets everything up. You will see a green line in chat when it is done.
+## What you get
 
-Three rows of 12 buttons sit along the bottom of your screen. Your normal WoW keys all still work.
-
-| Row | Keys |
+| Where | What |
 |---|---|
-| Bottom | 1 to 0, - and = |
-| Middle | Alt + the same keys |
-| Top | Ctrl + Shift + the same keys |
+| Bottom | Three rows of 12 buttons on 1 to =, Alt, and Ctrl + Shift |
+| Bottom right | A faded block for Hearthstone and food, first six on Alt + Q E R F C V |
+| Above the bars | Your health on the left, your target on the right, party above you |
+| Top right | Minimap, with your quests below it |
+| Top left | The levelling guide |
+| Bottom left | Chat |
 
-Drag spells from your spellbook onto the buttons. Put what you press most on the bottom row, and things you use less on the rows above.
+Your normal WoW keys still work. [GUIDE.md](GUIDE.md) shows which job goes on which key, for any class.
 
-A faded block of 12 buttons in the bottom right is for things like your Hearthstone and food. It lights up when you hover over it, and its first six buttons are Alt + Q, E, R, F, C and V.
-
-Enemies show health bars above their heads, and your gear repairs itself when you open a repair vendor.
-
-Your health card sits above the left third of the bars and your target above the right third, with your party stacked above your own card.
-
-Chat is in the bottom left, the guide in the top left, and the minimap in the top right with your quests below it. The middle of the screen stays empty.
-
-Your spellbook has a tab listing every spell you can learn and what it costs.
-
-[GUIDE.md](GUIDE.md) shows which job goes on which key, for any class.
-
-The minimap has no addon icons. Type these in chat to open each addon's settings:
-
-| Type | Opens |
+| Addon | Does |
 |---|---|
-| `/eui` | EllesmereUI, for the bars, minimap, bags, health cards and world map |
-| `/wt` | Spells you can learn |
+| EllesmereUI | Bars, health cards, minimap, bags, world map, auto repair. `/eui` |
+| Questie | Quests on your map |
+| Follow The Arrow | A free levelling guide with an arrow |
+| What's Training | Spells you can learn, in your spellbook. `/wt` |
+| Auctionator | A usable Auction House |
+| QuestieDB | Questie's data |
 
-To reset your layout, or fit it to a new monitor, type `/forever` in chat.
-
-If the game stutters, type `/forever cpu`. It lists the addons costing the most time per frame.
-
----
-
-**Your addons**
-
-| Addon | What it does |
+| Type | Does |
 |---|---|
-| Questie | Shows quests on your map. |
-| Follow The Arrow | A free levelling guide with an arrow to your next step. |
-| EllesmereUI | Your action bars, health cards, square minimap, bags, revealed world map, and auto repair. Type `/eui`. |
-| Auctionator | Makes the Auction House usable. |
+| `/forever` | Resets your layout, or fits it to a new monitor |
+| `/forever cpu` | Lists the addons costing the most time per frame |
 
----
-
-**If something breaks**
+## If something breaks
 
 | Problem | Fix |
 |---|---|
-| It says it can't find WoW Forever | Install WoW Forever from Battle.net first, or click Pick folder. |
-| It says it cannot write to the folder | Right-click WoWForeverKit.exe and pick Run as administrator. |
-| An addon says FAILED | Run the file again. |
-| A red error in chat | Run the file again, then fully quit and reopen WoW. |
+| Can't find WoW Forever | Install it from Battle.net, or click Pick folder |
+| Can't write to the folder | Right-click the file, Run as administrator |
+| An addon FAILED | Click Update again |
+| Red error in chat | Update, then fully quit and reopen WoW |
+| Antivirus deleted the exe | Use [Install.bat](https://github.com/jackisgolden/superb-wow-kit/releases/latest/download/Install.bat), which does the same in a console |
 
----
+## How it works
 
-Every addon comes straight from its author's release. This repo holds only the installer and the list. All credit goes to the people who make them.
+| Piece | Job |
+|---|---|
+| `launcher/SuperbWoWKit.cs` | The exe. Compares the installed commit with `main` and runs the installer. |
+| `install.ps1` | Downloads each addon in `addons.tsv` from its author's newest Forever release, with a pinned fallback. Kit files come from one commit. |
+| `!ForeverKit/Installed.lua` | Written by the installer: commit, date, and the folders it owns. The next install removes only those it no longer ships. |
+| `!ForeverKit/` | The kit addon. `Layout.lua` is the layout as data, applied once per character. `Config.lua` holds binds and settings. `Personal.lua` is yours and survives updates. |
+| `tests/` | The kit runs in real Lua against a stubbed WoW API on every push. A daily audit refreshes the pins. |
+
+Nothing writes to WTF, where your settings live.
+
+Every addon comes straight from its author's release. All credit goes to the people who make them.
 
 Jack

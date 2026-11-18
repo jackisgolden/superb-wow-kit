@@ -11,7 +11,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - run: C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /nologo /target:winexe /optimize /out:WoWForeverKit.exe /r:System.Windows.Forms.dll /r:System.Drawing.dll /r:System.Core.dll launcher\WoWForeverKit.cs
-      - run: gh release upload v1 WoWForeverKit.exe Install.bat --clobber
+      - run: C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /nologo /target:winexe /optimize /win32icon:launcher\icon.ico /out:SuperbWoWKit.exe /r:System.Windows.Forms.dll /r:System.Drawing.dll /r:System.Core.dll launcher\SuperbWoWKit.cs
+      - run: gh release upload v1 SuperbWoWKit.exe Install.bat --clobber
         env:
           GH_TOKEN: ${{ github.token }}

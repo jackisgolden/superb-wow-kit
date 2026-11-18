@@ -1,4 +1,4 @@
-"""Runs the Forever Kit addon in real Lua against a stubbed WoW API.
+"""Runs the Superb WoW Kit addon in real Lua against a stubbed WoW API.
 
 Needs: pip install lupa. Run from the repo root: python tests/test_kit.py
 """
@@ -285,8 +285,8 @@ end }
 
 def test_escape_menu_names_the_install_and_how_to_update():
     e = login(before=MENU, installed='ForeverKitInstall = { commit = "abc", date = "2026-11-17" }').eval
-    assert e("menuText") == "Forever Kit, installed 2026-11-17. To update, close WoW and run WoWForeverKit.exe."
-    assert login(before=MENU).eval("menuText") == "Forever Kit. To update, close WoW and run WoWForeverKit.exe."
+    assert e("menuText") == "Superb WoW Kit, installed 2026-11-17. To update, close WoW and run SuperbWoWKit.exe."
+    assert login(before=MENU).eval("menuText") == "Superb WoW Kit. To update, close WoW and run SuperbWoWKit.exe."
 
 
 def test_ellesmereui_never_asks_for_modules_or_a_look():

@@ -1,4 +1,4 @@
--- Forever Kit. The ! in the folder name loads this before other addons, so a
+-- Superb WoW Kit. The ! in the folder name loads this before other addons, so a
 -- character's layout is in place before EllesmereUI, Questie and Follow The
 -- Arrow read their settings.
 --
@@ -180,7 +180,7 @@ local function applySettings()
 end
 
 local function say(message)
-	print("|cff33ff99Forever Kit:|r " .. message)
+	print("|cffe8b240Superb WoW Kit:|r " .. message)
 end
 
 local SLOT_OFFSET = {
@@ -286,7 +286,7 @@ local function menuLine()
 	local installed = ForeverKitInstall and (", installed " .. ForeverKitInstall.date) or ""
 	local line = GameMenuFrame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 	line:SetPoint("TOP", GameMenuFrame, "BOTTOM", 0, -8)
-	line:SetText("Forever Kit" .. installed .. ". To update, close WoW and run WoWForeverKit.exe.")
+	line:SetText("Superb WoW Kit" .. installed .. ". To update, close WoW and run SuperbWoWKit.exe.")
 end
 
 local fresh = false

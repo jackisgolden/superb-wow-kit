@@ -1,4 +1,4 @@
-// WoW Forever Kit. One window that says whether the kit is installed and
+// Superb WoW Kit. One window that says whether the kit is installed and
 // current, and installs or updates it by running install.ps1 from GitHub at
 // the newest commit on main. Builds with the C# 5 compiler in every Windows.
 
@@ -16,7 +16,7 @@ using System.Windows.Forms;
 using Microsoft.Win32;
 
 class Kit : Form {
-	const string Repo = "jackisgolden/wow-forever-kit";
+	const string Repo = "jackisgolden/superb-wow-kit";
 	static readonly Color Bg = Color.FromArgb(22, 24, 29), Fg = Color.FromArgb(232, 232, 236),
 		Dim = Color.FromArgb(138, 143, 152), Green = Color.FromArgb(87, 200, 120),
 		Amber = Color.FromArgb(232, 178, 64), Blue = Color.FromArgb(64, 128, 232);
@@ -43,7 +43,8 @@ class Kit : Form {
 		SuspendLayout();
 		AutoScaleDimensions = new SizeF(96, 96);
 		AutoScaleMode = AutoScaleMode.Dpi;
-		Text = "WoW Forever Kit";
+		Text = "Superb WoW Kit";
+		Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 		BackColor = Bg;
 		ForeColor = Fg;
 		Font = new Font("Segoe UI", 10);
@@ -52,7 +53,7 @@ class Kit : Form {
 		StartPosition = FormStartPosition.CenterScreen;
 		ClientSize = new Size(460, 124);
 
-		var title = new Label { Text = "WoW Forever Kit", Font = new Font("Segoe UI Semibold", 15), Location = new Point(20, 16), AutoSize = true };
+		var title = new Label { Text = "Superb WoW Kit", Font = new Font("Segoe UI Semibold", 15), Location = new Point(20, 16), AutoSize = true };
 		dot.SetBounds(20, 60, 20, 24);
 		dot.Text = "●";
 		status.SetBounds(40, 60, 270, 24);
@@ -106,23 +107,22 @@ class Kit : Form {
 
 		var stamp = Path.Combine(addons, @"!ForeverKit\Installed.lua");
 		var installed = File.Exists(stamp)
-			? Regex.Match(File.ReadAllText(stamp), "commit = \"(\\w+)\", date = \"([\\d-]+)\"")
+			? Regex.Match(File.ReadAllText(stamp), "commit = \"(\\w+)\", date = \"([\\d-]+)\", folders = \"([^\"]*)\"")
 			: Match.Empty;
 		bool present = Directory.Exists(Path.Combine(addons, "!ForeverKit"));
-		// The install writes its stamp last, so a folder added or removed in
-		// AddOns since then came from something else, such as CurseForge.
-		bool touched = installed.Success && Directory.GetLastWriteTimeUtc(addons) > File.GetLastWriteTimeUtc(stamp);
-		string verb = !present ? "Install" : touched ? "Repair" : "Update";
+		// The stamp lists the folders the kit installed, and only those count.
+		bool missing = installed.Success && installed.Groups[3].Value.Split(',').Any(f => !Directory.Exists(Path.Combine(addons, f)));
+		string verb = !present ? "Install" : missing ? "Repair" : "Update";
 
 		if (latest == null)
 			Set(Amber, "Can't reach GitHub", "Retry", Check, false);
-		else if (installed.Success && installed.Groups[1].Value == latest && !touched)
+		else if (installed.Success && installed.Groups[1].Value == latest && !missing)
 			Set(Green, "Up to date · installed " + installed.Groups[2].Value, "Close", Close, false);
 		else if (WowRunning()) {
 			Set(Amber, "Close WoW to " + verb.ToLower(), verb, null, true);
 			poll.Start();
 		} else
-			Set(present ? Amber : Dim, !present ? "Not installed" : touched ? "Addons changed outside the kit" : "Update available", verb, Install, true);
+			Set(present ? Amber : Dim, !present ? "Not installed" : missing ? "Kit addons are missing" : "Update available", verb, Install, true);
 	}
 
 	async void Install() {
@@ -130,7 +130,7 @@ class Kit : Form {
 		log.Visible = true;
 		ClientSize = new Size(ClientSize.Width, log.Bottom + log.Left);
 		Set(Blue, "Installing…", "Working", null, true);
-		string script = Path.Combine(Path.GetTempPath(), "wow-forever-kit.ps1");
+		string script = Path.Combine(Path.GetTempPath(), "superb-wow-kit.ps1");
 		try {
 			await Task.Run(() => Client().DownloadFile("https://raw.githubusercontent.com/" + Repo + "/" + latest + "/install.ps1", script));
 		} catch (WebException e) {
@@ -164,7 +164,7 @@ class Kit : Form {
 
 	static WebClient Client() {
 		var client = new WebClient();
-		client.Headers["User-Agent"] = "wow-forever-kit";
+		client.Headers["User-Agent"] = "superb-wow-kit";
 		return client;
 	}
 

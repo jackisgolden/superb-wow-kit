@@ -1,4 +1,4 @@
--- The Forever Kit layout, as data. ForeverKit.lua applies it.
+-- The Superb WoW Kit layout, as data. ForeverKit.lua applies it.
 --
 -- One module builds the page: an action button plus its gap. The screen is a
 -- three by three grid. The middle column holds the action bars, twelve modules

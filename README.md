@@ -1,6 +1,6 @@
 # Superb WoW Kit
 
-WoW Forever, set up in one click: six addons, a clean layout, and keybinds that work for every class.
+WoW Forever, set up in one click: seven addons, a clean layout, and keybinds that work for every class.
 
 **[Download SuperbWoWKit.exe](https://github.com/jackisgolden/superb-wow-kit/releases/latest/download/SuperbWoWKit.exe)**
 
@@ -23,7 +23,7 @@ Your settings stay put.
 
 Use CurseForge, WowUp, or a zip, same as always. The kit only touches the folders it installed.
 
-To keep the six addons without the layout, untick Superb WoW Kit in the AddOns list.
+To keep the seven addons without the layout, untick Superb WoW Kit in the AddOns list.
 
 ## What you get
 
@@ -48,10 +48,33 @@ Your normal WoW keys still work. [GUIDE.md](GUIDE.md) shows which job goes on wh
 | MythicSim | Exports your character to mythicsim.com to sim your DPS. `/msim` |
 | QuestieDB | Questie's data |
 
+## Follow The Arrow
+
+Use it from level 1 to 30. The arrow points at your next step and the window says what to do there, dungeons included.
+
+Hide it with `/fta hide` past 30, where its guide is a written preview without the arrow, and play from Questie's map instead. Hide it too when you level with friends on other quests, or want to pick your own.
+
+## MythicSim
+
+1. Type `/msim`, or click its minimap button.
+2. Press Ctrl+C. The text is already selected.
+3. Paste it at [mythicsim.com/wow-forever/sim](https://mythicsim.com/wow-forever/sim). Quick Sim gives your DPS, Best Gear compares items.
+
+## Cheatsheet
+
 | Type | Does |
 |---|---|
 | `/superb` | Resets your layout, or fits it to a new monitor |
 | `/superb cpu` | Lists the addons costing the most time per frame |
+| `/eui` | EllesmereUI settings |
+| `/questie` | Questie settings |
+| `/fta show` `/fta hide` | Shows or hides the guide |
+| `/fta next` `/fta prev` | Skips a step, or goes back one |
+| `/fta reset` | Puts the guide window back |
+| `/wt` | Spells you can learn |
+| `/atr config` | Auctionator settings |
+| `/msim` | Exports your character for a sim |
+| `/reload` | Reloads the UI after a change |
 
 ## If something breaks
 

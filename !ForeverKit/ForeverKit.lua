@@ -53,7 +53,6 @@ end
 
 local function seedUnitFrames()
 	EllesmereUIDB = EllesmereUIDB or {}
-	EllesmereUIDB.firstInstallPopupShown = true
 	local spec = Layout.frames
 	local profile = frameProfile(EllesmereUIDB, "EllesmereUIUnitFrames")
 	merge(profile, { player = spec.player, target = spec.target, positions = spec.positions })
@@ -271,6 +270,15 @@ local onceSeeders = {
 	FollowTheArrow = { run = seedGuide, version = Layout.guide.version },
 	EllesmereUIBags = { run = seedBags, version = Layout.bags.version },
 }
+-- EllesmereUI asks a fresh install to pick modules, then on the next login to
+-- pick a look. The kit has made both choices, so it marks them made on every
+-- load, which also clears a look prompt left pending from an earlier login.
+local function skipEllesmerePrompts()
+	EllesmereUIDB = EllesmereUIDB or {}
+	EllesmereUIDB.firstInstallPopupShown = true
+	EllesmereUIDB.styleChoicePending = nil
+end
+
 local fresh = false
 local frame = CreateFrame("Frame")
 
@@ -326,6 +334,8 @@ frame:SetScript("OnEvent", function(_, event, name)
 	elseif name == "!ForeverKit" then
 		ForeverKitChar = ForeverKitChar or {}
 		fresh = ForeverKitChar.version ~= Layout.version
+	elseif name == "EllesmereUI" then
+		skipEllesmerePrompts()
 	else
 		local once = onceSeeders[name]
 		local seeded = ensure(ForeverKitChar, "seeded")

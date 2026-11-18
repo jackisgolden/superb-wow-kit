@@ -76,7 +76,7 @@ C_EditMode = {
 }
 """
 
-ADDONS = ("!ForeverKit", "EllesmereUIBags", "FollowTheArrow", "EllesmereUIActionBars", "EllesmereUIMinimap", "EllesmereUIRaidFrames", "EllesmereUIUnitFrames", "Questie")
+ADDONS = ("!ForeverKit", "EllesmereUI", "EllesmereUIBags", "FollowTheArrow", "EllesmereUIActionBars", "EllesmereUIMinimap", "EllesmereUIRaidFrames", "EllesmereUIUnitFrames", "Questie")
 
 
 def login(name="Raba", surname="Canoosh", before="", personal=""):
@@ -272,7 +272,13 @@ def test_minimap_icons_hide_and_stay_hidden_but_pins_and_zone_text_stay():
 def test_layout_version_bump_leaves_frames_alone():
     version = re.search(r"version = (\d+),\n\t\tplayer", (ADDON / "Layout.lua").read_text())[1]
     before = f"ForeverKitChar = {{ version = 4, seeded = {{ EllesmereUIUnitFrames = {version}, EllesmereUIRaidFrames = {version}, EllesmereUIMinimap = 3, EllesmereUIActionBars = 2, EllesmereUIBags = 1 }} }}"
-    assert login(before=before).eval("EllesmereUIDB") is None
+    assert login(before=before).eval("EllesmereUIDB.profiles") is None
+
+
+def test_ellesmereui_never_asks_for_modules_or_a_look():
+    e = login(before="EllesmereUIDB = { styleChoicePending = true }").eval
+    assert e("EllesmereUIDB.firstInstallPopupShown") is True
+    assert e("EllesmereUIDB.styleChoicePending") is None
 
 
 def test_minimap_is_seven_modules_wide_in_the_top_right_with_the_tracker_below():

@@ -56,7 +56,8 @@ Minimap = { GetChildren = function() return (table.unpack or unpack)(mapChildren
 function InCombatLockdown() return inCombat end
 SlashCmdList = {}
 Enum = {
-  EditModeSystem = { UnitFrame = 3, ChatFrame = 8, AuraFrame = 6, SwingTimer = 30 },
+  EditModeSystem = { CastBar = 1, UnitFrame = 3, ChatFrame = 8, AuraFrame = 6, SwingTimer = 30 },
+  EditModeCastBarSetting = { BarSize = 0, LockToPlayerFrame = 1, ShowCastTime = 2 },
   EditModeSwingTimerSystemIndices = { MainHand = 1, OffHand = 2, Ranged = 3 },
   EditModeSwingTimerSetting = { Scale = 0, Opacity = 1, Visibility = 2, Width = 3, Height = 4, ShowBarTitle = 5, ShowTime = 6 },
   EditModeAuraFrameSystemIndices = { BuffFrame = 1, DebuffFrame = 2 },
@@ -70,7 +71,8 @@ local function preset()
     { system = 8, settings = { { setting = 0, value = 4 }, { setting = 1, value = 30 }, { setting = 2, value = 1 }, { setting = 3, value = 70 } } },
     { system = 6, systemIndex = 1, settings = {} }, { system = 6, systemIndex = 2, settings = {} },
     { system = 30, systemIndex = 1, settings = { { setting = 0, value = 5 }, { setting = 2, value = 0 }, { setting = 3, value = 213 },
-      { setting = 4, value = 15 }, { setting = 5, value = 1 }, { setting = 6, value = 1 } } } } }
+      { setting = 4, value = 15 }, { setting = 5, value = 1 }, { setting = 6, value = 1 } } },
+    { system = 1, settings = { { setting = 0, value = 0 }, { setting = 1, value = 1 }, { setting = 2, value = 0 } } } } }
 end
 EditModePresetLayoutManager = { GetCopyOfPresetLayouts = function() return { preset(), preset() } end }
 layoutInfo = { activeLayout = 1, layouts = {} }
@@ -162,7 +164,7 @@ def test_existing_custom_layout_is_edited_in_place():
 def test_edit_mode_failure_tells_the_player_and_breaks_nothing():
     lua = login(before="breakEditMode = true")
     assert any("Edit Mode" in m for m in lua.globals().messages.values())
-    assert lua.eval("ForeverKitChar.version") == 5
+    assert lua.eval("ForeverKitChar.version") == 6
 
 
 def test_combat_defers_party_frames():
@@ -174,7 +176,7 @@ def test_layout_upgrade_reapplies_but_same_version_does_not():
     e = login(before='ForeverKitChar = { version = 1 }').eval
     assert e("saves") == 1
     settings = e("ForeverKitChar.settings")
-    e = login(before=f"ForeverKitChar = {{ version = 5, settings = [==[{settings}]==], defaultsRestored = true }}").eval
+    e = login(before=f"ForeverKitChar = {{ version = 6, settings = [==[{settings}]==], defaultsRestored = true }}").eval
     assert e("saves") == 0 and e("saved") == 0
 
 
@@ -186,7 +188,7 @@ def test_seeding_keeps_other_settings():
 
 def test_personal_overrides_apply_without_touching_layout():
     personal = 'ForeverKitConfig.binds.BUTTON4 = "TOGGLEAUTORUN"; ForeverKitConfig.binds["ALT-1"] = false; ForeverKitConfig.cvars.cameraFov = 75'
-    e = login(before='ForeverKitChar = { version = 5, settings = "old", defaultsRestored = true }', personal=personal).eval
+    e = login(before='ForeverKitChar = { version = 6, settings = "old", defaultsRestored = true }', personal=personal).eval
     assert e("saved") == 1 and e("binds.BUTTON4") == "TOGGLEAUTORUN"
     assert e('binds["ALT-1"]') is None and e("cvars.cameraFov") == 75 and e("saves") == 0
 
@@ -230,7 +232,7 @@ def test_friends_with_no_macros_touch_no_buttons():
 def test_macros_apply_once_and_update_in_place():
     lua = login(personal=MACROS)
     done = lua.eval("ForeverKitChar.actions")
-    before = f'ForeverKitChar = {{ version = 5, settings = "old", actions = [==[{done}]==] }}'
+    before = f'ForeverKitChar = {{ version = 6, settings = "old", actions = [==[{done}]==] }}'
     assert login(before=before, personal=MACROS).eval("#macroList") == 0
     edited = MACROS.replace("Holy Light", "Flash of Light")
     e = login(before='macroList = { { name = "Heal", body = "old" } }', personal=edited).eval
@@ -276,7 +278,7 @@ def test_minimap_icons_hide_and_stay_hidden_but_pins_and_zone_text_stay():
 
 def test_layout_version_bump_leaves_frames_alone():
     version = re.search(r"version = (\d+),\n\t\tplayer", (ADDON / "Layout.lua").read_text())[1]
-    before = f"ForeverKitChar = {{ version = 5, seeded = {{ EllesmereUIUnitFrames = {version}, EllesmereUIRaidFrames = {version}, EllesmereUIMinimap = 3, EllesmereUIActionBars = 2, EllesmereUIBags = 1 }} }}"
+    before = f"ForeverKitChar = {{ version = 6, seeded = {{ EllesmereUIUnitFrames = {version}, EllesmereUIRaidFrames = {version}, EllesmereUIMinimap = 3, EllesmereUIActionBars = 2, EllesmereUIBags = 1 }} }}"
     assert login(before=before).eval("EllesmereUIDB.profiles") is None
 
 
@@ -304,6 +306,16 @@ def test_swing_timer_hangs_under_the_player_health_bar_in_combat():
     assert setting(1) == 1, "60% scale"
     assert round((213 + setting(3)) * 0.6) == e(f"{unit}.player.frameWidth"), "as wide as the health bar"
     assert setting(4) == 0 and setting(2) == 1 and setting(5) == 0 and setting(6) == 0, "slim, in combat, no text"
+
+
+def test_cast_bar_sits_centered_above_the_cards():
+    e = login().eval
+    unit = 'EllesmereUIDB.profiles.Default.addons.EllesmereUIUnitFrames'
+    cast = "layoutInfo.layouts[1].systems[6]"
+    card_top = e(f"{unit}.positions.player.y") + e(f"{unit}.player.healthHeight") + e(f"{unit}.player.powerHeight")
+    assert e(f"{cast}.anchorInfo.point") == "BOTTOM" and e(f"{cast}.anchorInfo.offsetX") == 0
+    assert e(f"{cast}.anchorInfo.offsetY") > card_top + 8, "its name box clears the cards"
+    assert e(f"{cast}.settings[2].value") == 0, "free of the game's player frame"
 
 
 def test_target_of_target_sits_right_of_the_target_card_level_with_its_health():

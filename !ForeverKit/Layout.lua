@@ -11,11 +11,12 @@
 --                                   quest tracker
 --
 --   chat      player . target       damage meter
+--                  cast bar
 --             three rows of twelve  utility buttons
 --
 -- The twelve columns split into three groups of four: the player card, a gap
 -- and the target card. The utility buttons are one more group of four on the
--- same three row lines. Chat rises to the top line of the cards.
+-- same three row lines. The cast bar sits centered above the cards. Chat rises to the top line of the cards.
 --
 -- Frames in the middle hang off the bottom of the screen with the bars, so
 -- they keep their spacing at any resolution, and the rails stay inside a
@@ -59,10 +60,15 @@ local CARD_HEIGHT = CARD_HEALTH + CARD_POWER
 local SWING_SCALE = 0.6
 local SWING_HEIGHT = 15 * SWING_SCALE
 local SWING_WIDTH = THIRD - CARD_HEIGHT
-local SWING_BOTTOM = BLOCK_TOP + ROW + SPACE    -- clears the stance bar and the cast bar
+local SWING_BOTTOM = BLOCK_TOP + ROW + SPACE    -- clears the stance bar
 local CARD_BOTTOM = SWING_BOTTOM + 2 * (SWING_HEIGHT + GAP)
 local CARD_TOP = CARD_BOTTOM + CARD_HEIGHT
 local CARD_OPACITY = 60
+
+-- The game's cast bar prints the spell name in a box under the bar, so its
+-- bottom edge leaves room for that box above the cards.
+local CAST_TEXT = 14
+local CAST_BOTTOM = CARD_TOP + SPACE + CAST_TEXT
 
 local PARTY_HEIGHT = 30
 
@@ -117,7 +123,7 @@ local function card(side)
 end
 
 ForeverKitLayout = {
-	version = 5,
+	version = 6,
 	profile = "Forever Kit",
 
 	-- EllesmereUI action bars. Bar2, Bar3 and Bar5 are the game's bottom left,
@@ -206,6 +212,10 @@ ForeverKitLayout = {
 		swing("MainHand", SWING_BOTTOM + SWING_HEIGHT + GAP),
 		swing("OffHand", SWING_BOTTOM),
 		swing("Ranged", SWING_BOTTOM),
+		{
+			system = "CastBar", point = "BOTTOM", x = 0, y = CAST_BOTTOM,
+			settingNames = "EditModeCastBarSetting", settings = { LockToPlayerFrame = 0 },
+		},
 		{ system = "HudTooltip", point = "BOTTOMRIGHT", x = -EDGE, y = RAIL_STACK_TOP },
 	},
 

@@ -2,7 +2,7 @@
 
 One file sets up WoW Forever with the addons I use.
 
-**[Download Install.bat](https://github.com/jackisgolden/wow-forever-kit/releases/latest/download/Install.bat)**
+**[Download WoWForeverKit.exe](https://github.com/jackisgolden/wow-forever-kit/releases/latest/download/WoWForeverKit.exe)**
 
 ---
 
@@ -10,11 +10,13 @@ One file sets up WoW Forever with the addons I use.
 
 **2. Download the file above.** Your browser may ask if you want to keep it. Click Keep.
 
-**3. Double-click it.** Windows may show a blue box saying it protected your PC. Click More info, then Run anyway. A black window lists each addon as it installs, which takes a few seconds.
+**3. Double-click it.** Windows may show a blue box saying it protected your PC. Click More info, then Run anyway. A small window opens. Click Install, and it lists each addon as it installs, which takes a few seconds.
 
 **4. Start WoW.** On the character screen, click AddOns and make sure they are all ticked.
 
-To update, close WoW and run the same file again. Your settings stay put, and addons I removed from the kit get removed for you.
+To update, open the same file again. It says Up to date, or Update available with a button. Your settings stay put, and addons I removed from the kit get removed for you. The Escape menu in game shows the date you last installed.
+
+If your antivirus deletes the exe, use [Install.bat](https://github.com/jackisgolden/wow-forever-kit/releases/latest/download/Install.bat) instead. It does the same install in a black window.
 
 ---
 
@@ -72,8 +74,8 @@ If the game stutters, type `/forever cpu`. It lists the addons costing the most 
 
 | Problem | Fix |
 |---|---|
-| It says WoW was not found | Install WoW Forever from Battle.net first. |
-| It says it cannot write to the folder | Right-click Install.bat and pick Run as administrator. |
+| It says it can't find WoW Forever | Install WoW Forever from Battle.net first, or click Pick folder. |
+| It says it cannot write to the folder | Right-click WoWForeverKit.exe and pick Run as administrator. |
 | An addon says FAILED | Run the file again. |
 | A red error in chat | Run the file again, then fully quit and reopen WoW. |
 

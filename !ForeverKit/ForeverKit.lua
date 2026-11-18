@@ -279,6 +279,16 @@ local function skipEllesmerePrompts()
 	EllesmereUIDB.styleChoicePending = nil
 end
 
+-- The Escape menu names the installed kit and how to update it. The installer
+-- writes ForeverKitInstall.
+local function menuLine()
+	if not GameMenuFrame then return end
+	local installed = ForeverKitInstall and (", installed " .. ForeverKitInstall.date) or ""
+	local line = GameMenuFrame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+	line:SetPoint("TOP", GameMenuFrame, "BOTTOM", 0, -8)
+	line:SetText("Forever Kit" .. installed .. ". To update, close WoW and run WoWForeverKit.exe.")
+end
+
 local fresh = false
 local frame = CreateFrame("Frame")
 
@@ -321,6 +331,7 @@ frame:RegisterEvent("PLAYER_REGEN_ENABLED")
 frame:SetScript("OnEvent", function(_, event, name)
 	if event == "PLAYER_LOGIN" then
 		onLogin()
+		menuLine()
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		onLayouts()
 		C_Timer.After(2, onActions)

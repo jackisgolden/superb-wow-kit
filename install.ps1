@@ -1,13 +1,17 @@
-# WoW Forever Kit installer. Windows PowerShell 5.1, run by Install.bat.
+# WoW Forever Kit installer, for Windows PowerShell 5.1.
 #
-# Downloads the newest Forever build of each addon in addons.tsv from its
+# Run by WoWForeverKit.exe or Install.bat. Downloads the newest Forever build of each addon in addons.tsv from its
 # author's release, and replaces only those addon folders. It never touches
 # WTF, where settings live. A pinned file in addons.tsv covers a failed lookup.
 # A row's folders column limits which folders of that addon's zip are installed.
 # A row with hold set installs its pinned file and skips the lookup.
 # A github row's file carries its pin's version, and the lookup matches any version.
 #
-# WOW_KIT_ADDONS overrides the target AddOns folder.
+# Every kit file comes from one commit of main, and a full install records that
+# commit and the date in !ForeverKit/Installed.lua, which the exe compares with
+# main and the Escape menu shows.
+#
+# WOW_KIT_ADDONS overrides the target AddOns folder, and WOW_KIT_SHA the commit.
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
@@ -15,8 +19,13 @@ $ProgressPreference = 'SilentlyContinue'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 Add-Type -AssemblyName System.Windows.Forms
 
-$Raw = 'https://raw.githubusercontent.com/jackisgolden/wow-forever-kit/main'
 $Agent = 'wow-forever-kit'
+$Sha = $env:WOW_KIT_SHA
+if (-not $Sha) {
+    $Sha = Invoke-RestMethod -UseBasicParsing -UserAgent $Agent -Headers @{ Accept = 'application/vnd.github.sha' } `
+        'https://api.github.com/repos/jackisgolden/wow-forever-kit/commits/main'
+}
+$Raw = "https://raw.githubusercontent.com/jackisgolden/wow-forever-kit/$Sha"
 $Flavor = '1.60.1'
 
 function Say($text, $color = 'Gray') { Write-Host $text -ForegroundColor $color }
@@ -104,7 +113,7 @@ try {
     Set-Content -Path $probe -Value 'ok'
     Remove-Item $probe
 } catch {
-    Say 'Windows would not let me write to that folder. Right-click Install.bat and pick "Run as administrator".' Red
+    Say 'Windows would not let me write to that folder. Right-click WoWForeverKit.exe and pick "Run as administrator".' Red
     return
 }
 
@@ -166,5 +175,7 @@ if ($failed.Count) {
     Say ("{0} of {1} installed. These failed: {2}" -f ($rows.Count - $failed.Count), $rows.Count, ($failed -join ', ')) Yellow
     Say 'Run this again. A second try usually gets them.' Yellow
 } else {
+    $date = Get-Date -Format 'yyyy-MM-dd'
+    Set-Content -Path (Join-Path $kit 'Installed.lua') -Value "ForeverKitInstall = { commit = `"$Sha`", date = `"$date`" }"
     Say "All $($rows.Count) installed. Start WoW." Green
 }

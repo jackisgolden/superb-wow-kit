@@ -79,13 +79,14 @@ C_EditMode = {
 ADDONS = ("!ForeverKit", "EllesmereUI", "EllesmereUIBags", "FollowTheArrow", "EllesmereUIActionBars", "EllesmereUIMinimap", "EllesmereUIRaidFrames", "EllesmereUIUnitFrames", "Questie")
 
 
-def login(name="Raba", surname="Canoosh", before="", personal=""):
+def login(name="Raba", surname="Canoosh", before="", personal="", installed=""):
     lua = LuaRuntime(unpack_returned_tuples=True)
     lua.execute(STUBS)
     lua.globals().NAME, lua.globals().SURNAME = name, surname
     lua.execute(before)
     for file in TOC_FILES:
-        lua.execute(personal if file == "Personal.lua" else (ADDON / file).read_text())
+        written = {"Personal.lua": personal, "Installed.lua": installed}
+        lua.execute(written[file] if file in written else (ADDON / file).read_text())
     handler = lua.globals().handler
     for addon in ADDONS:
         handler(None, "ADDON_LOADED", addon)
@@ -273,6 +274,19 @@ def test_layout_version_bump_leaves_frames_alone():
     version = re.search(r"version = (\d+),\n\t\tplayer", (ADDON / "Layout.lua").read_text())[1]
     before = f"ForeverKitChar = {{ version = 4, seeded = {{ EllesmereUIUnitFrames = {version}, EllesmereUIRaidFrames = {version}, EllesmereUIMinimap = 3, EllesmereUIActionBars = 2, EllesmereUIBags = 1 }} }}"
     assert login(before=before).eval("EllesmereUIDB.profiles") is None
+
+
+MENU = """
+GameMenuFrame = { CreateFontString = function()
+  return { SetPoint = function() end, SetText = function(_, t) menuText = t end }
+end }
+"""
+
+
+def test_escape_menu_names_the_install_and_how_to_update():
+    e = login(before=MENU, installed='ForeverKitInstall = { commit = "abc", date = "2026-11-17" }').eval
+    assert e("menuText") == "Forever Kit, installed 2026-11-17. To update, close WoW and run WoWForeverKit.exe."
+    assert login(before=MENU).eval("menuText") == "Forever Kit. To update, close WoW and run WoWForeverKit.exe."
 
 
 def test_ellesmereui_never_asks_for_modules_or_a_look():

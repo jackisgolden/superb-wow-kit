@@ -7,4 +7,5 @@
 Layout.lua
 Config.lua
 Personal.lua
+Installed.lua
 ForeverKit.lua

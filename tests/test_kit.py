@@ -306,6 +306,15 @@ def test_swing_timer_hangs_under_the_player_health_bar_in_combat():
     assert setting(4) == 0 and setting(2) == 1 and setting(5) == 0 and setting(6) == 0, "slim, in combat, no text"
 
 
+def test_target_of_target_sits_right_of_the_target_card_level_with_its_health():
+    e = login().eval
+    pos = 'EllesmereUIDB.profiles.Default.addons.EllesmereUIUnitFrames.positions'
+    tot = 'EllesmereUIDB.profiles.Default.addons.EllesmereUIUnitFrames.targettarget'
+    assert e(f"{pos}.targettarget.x") == e(f"{pos}.target.x") + 8 and e(f"{pos}.targettarget.relPoint") == "BOTTOM"
+    assert e(f"{pos}.targettarget.y") == e(f"{pos}.target.y") + 8, "level with the health bar, above the power bar"
+    assert e(f"{tot}.healthHeight") == 28 and e(f"{tot}.frameWidth") == 92
+
+
 def test_ellesmereui_never_asks_for_modules_or_a_look():
     e = login(before="EllesmereUIDB = { styleChoicePending = true }").eval
     assert e("EllesmereUIDB.firstInstallPopupShown") is True

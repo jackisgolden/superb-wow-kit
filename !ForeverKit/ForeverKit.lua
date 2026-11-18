@@ -55,7 +55,7 @@ local function seedUnitFrames()
 	EllesmereUIDB = EllesmereUIDB or {}
 	local spec = Layout.frames
 	local profile = frameProfile(EllesmereUIDB, "EllesmereUIUnitFrames")
-	merge(profile, { player = spec.player, target = spec.target, positions = spec.positions })
+	merge(profile, { player = spec.player, target = spec.target, targettarget = spec.targettarget, positions = spec.positions })
 	merge(profile.player, spec.playerHealth)
 end
 

@@ -213,15 +213,18 @@ ForeverKitLayout = {
 	party = { point = "TOPRIGHT", relativePoint = "CENTER", x = -480, y = -240 },
 
 	-- EllesmereUI cards take the outer thirds of the bar block, and the party
-	-- stacks up from the player card at the same width.
+	-- stacks up from the player card at the same width. Target of target sits
+	-- just right of the target card, level with its health bar.
 	frames = {
-		version = 6,
+		version = 7,
 		player = card("left"),
 		playerHealth = { healthClassColored = false, customFillColor = HEALTH_GREEN },
 		target = card("right"),
+		targettarget = { frameWidth = span(2), healthHeight = CARD_HEALTH, healthBarOpacity = CARD_OPACITY },
 		positions = {
 			player = { point = "BOTTOMLEFT", relPoint = "BOTTOM", x = BAR_LEFT, y = CARD_BOTTOM },
 			target = { point = "BOTTOMRIGHT", relPoint = "BOTTOM", x = BLOCK_RIGHT, y = CARD_BOTTOM },
+			targettarget = { point = "BOTTOMLEFT", relPoint = "BOTTOM", x = BLOCK_RIGHT + SPACE, y = CARD_BOTTOM + CARD_POWER },
 		},
 		party = {
 			partyFrameWidth = THIRD - PARTY_HEIGHT, partyFrameHeight = PARTY_HEIGHT, partyHideSelf = true,

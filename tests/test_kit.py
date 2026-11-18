@@ -123,7 +123,7 @@ def test_xp_bar_is_ellesmereuis_and_sits_under_the_bottom_row():
     assert e(f"{AB}.barPositions.XPBar.y") == 24 and top < e(f"{AB}.barPositions.MainBar.y")
 
 
-def test_forever_command_reapplies_every_part():
+def test_superb_command_reapplies_every_part():
     lua = login()
     lua.execute('SlashCmdList.FOREVERKIT("")')
     assert lua.eval("ForeverKitChar.version") is None and lua.eval("ForeverKitChar.seeded") is None

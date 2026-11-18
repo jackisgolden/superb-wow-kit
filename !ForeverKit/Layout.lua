@@ -23,7 +23,7 @@
 -- its bottom-left corner, measured from the named screen point.
 --
 -- Each part has a version. Raise one to re-apply that part for every
--- character. /forever re-applies them all, which also fits the rails to a
+-- character. /superb re-applies them all, which also fits the rails to a
 -- new monitor.
 
 local BUTTON = 45

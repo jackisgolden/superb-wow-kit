@@ -49,8 +49,8 @@ Your normal WoW keys still work. [GUIDE.md](GUIDE.md) shows which job goes on wh
 
 | Type | Does |
 |---|---|
-| `/forever` | Resets your layout, or fits it to a new monitor |
-| `/forever cpu` | Lists the addons costing the most time per frame |
+| `/superb` | Resets your layout, or fits it to a new monitor |
+| `/superb cpu` | Lists the addons costing the most time per frame |
 
 ## If something breaks
 

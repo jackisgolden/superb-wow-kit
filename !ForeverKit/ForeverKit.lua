@@ -3,7 +3,7 @@
 -- Arrow read their settings.
 --
 -- Each part of Layout.lua is applied once per character, on its own version,
--- and /forever applies them all again. Config.lua and Personal.lua hold binds,
+-- and /superb applies them all again. Config.lua and Personal.lua hold binds,
 -- game settings, macros, and spell placement, which apply at login whenever
 -- they change.
 
@@ -384,7 +384,7 @@ local function cpuReport()
 	end
 end
 
-SLASH_FOREVERKIT1 = "/forever"
+SLASH_FOREVERKIT1 = "/superb"
 SlashCmdList.FOREVERKIT = function(argument)
 	if argument == "cpu" then
 		cpuReport()

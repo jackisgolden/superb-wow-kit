@@ -45,6 +45,7 @@ Your normal WoW keys still work. [GUIDE.md](GUIDE.md) shows which job goes on wh
 | Follow The Arrow | A free levelling guide with an arrow |
 | What's Training | Spells you can learn, in your spellbook. `/wt` |
 | Auctionator | A usable Auction House |
+| MythicSim | Exports your character to mythicsim.com to sim your DPS. `/msim` |
 | QuestieDB | Questie's data |
 
 | Type | Does |

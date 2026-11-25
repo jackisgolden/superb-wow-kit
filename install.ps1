@@ -12,6 +12,10 @@
 # The exe compares the commit with main, and the next install removes only
 # folders on that list that the kit no longer ships. Nothing else is touched.
 #
+# A row with optional set installs only when chosen, and needs its folders column.
+# The exe passes the chosen names in WOW_KIT_OPTIONAL, or none. Without it, a
+# console run asks, and any other run keeps what the kit already installed.
+#
 # WOW_KIT_ADDONS overrides the target AddOns folder, and WOW_KIT_SHA the commit.
 
 $ErrorActionPreference = 'Stop'
@@ -119,13 +123,26 @@ try {
 }
 
 $list = (Invoke-WebRequest -UseBasicParsing -UserAgent $Agent "$Raw/addons.tsv").Content
-$rows = $list | ConvertFrom-Csv -Delimiter "`t"
+$rows = @($list | ConvertFrom-Csv -Delimiter "`t")
 
-$work = Join-Path $env:TEMP ("superb-wow-kit-" + [guid]::NewGuid())
-New-Item -ItemType Directory -Path $work | Out-Null
 $stamp = Join-Path $addons '!ForeverKit\Installed.lua'
 $previous = @()
 if ((Test-Path $stamp) -and ((Get-Content -Raw $stamp) -match 'folders = "([^"]*)"')) { $previous = $Matches[1] -split ',' }
+
+function Test-Chosen($row) {
+    if (-not $row.optional) { return $true }
+    if ($env:WOW_KIT_OPTIONAL) { return ($env:WOW_KIT_OPTIONAL -split ',') -contains $row.name }
+    $had = $previous -contains ($row.folders -split ',')[0]
+    if ($env:WOW_KIT_ADDONS) { return $had }
+    $keep = if ($had) { 'Y' } else { 'N' }
+    $answer = Read-Host "Include $($row.name)? Optional. y or n, Enter for $keep"
+    if (-not $answer) { return $had }
+    return $answer -like 'y*'
+}
+$rows = @($rows | Where-Object { Test-Chosen $_ })
+
+$work = Join-Path $env:TEMP ("superb-wow-kit-" + [guid]::NewGuid())
+New-Item -ItemType Directory -Path $work | Out-Null
 $owned = New-Object System.Collections.ArrayList
 $failed = New-Object System.Collections.ArrayList
 $n = 0

@@ -8,7 +8,7 @@ WoW Forever, set up in one click: seven addons, a clean layout, and keybinds tha
 
 1. Close WoW.
 2. Run the file. If Windows says it protected your PC, click More info, then Run anyway.
-3. Click Install.
+3. Click Install. Tick Dungeon Journal first if you want it.
 4. Start WoW. On the character screen, open AddOns and check they are all ticked.
 
 Your first login sets everything up and says so in chat.
@@ -47,6 +47,13 @@ Your normal WoW keys still work. [GUIDE.md](GUIDE.md) shows which job goes on wh
 | Auctionator | A usable Auction House |
 | MythicSim | Exports your character to mythicsim.com to sim your DPS. `/msim` |
 | QuestieDB | Questie's data |
+| Dungeon Journal (optional) | Dungeon bosses, loot and quests. `/dj` |
+
+## Dungeon Journal
+
+Off unless you tick it. It takes 130 MB on disk. To add or remove it, open SuperbWoWKit.exe, change the tick and click Apply. A copy you installed yourself stays yours.
+
+No tick box means an old exe: [download it again](https://github.com/jackisgolden/superb-wow-kit/releases/latest/download/SuperbWoWKit.exe).
 
 ## Follow The Arrow
 
@@ -73,6 +80,7 @@ Hide it with `/fta hide` past 30, where its guide is a written preview without t
 | `/fta reset` | Puts the guide window back |
 | `/wt` | Spells you can learn |
 | `/atr config` | Auctionator settings |
+| `/dj` | Opens Dungeon Journal |
 | `/msim` | Exports your character for a sim |
 | `/reload` | Reloads the UI after a change |
 

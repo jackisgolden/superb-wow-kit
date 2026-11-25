@@ -25,8 +25,9 @@ class Kit : Form {
 	Button button = new Button();
 	TextBox log = new TextBox();
 	Timer poll = new Timer { Interval = 2000 };
+	List<CheckBox> optional = new List<CheckBox>();
 	string addons, latest;
-	Action onClick = delegate { };
+	Action onClick = delegate { }, refresh = delegate { };
 
 	[DllImport("user32.dll")] static extern bool SetProcessDPIAware();
 	[DllImport("dwmapi.dll")] static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
@@ -103,7 +104,13 @@ class Kit : Form {
 		}
 		detail.Text = addons;
 		Set(Dim, "Checking for updates…", "Close", null, false);
+		foreach (var box in optional) box.Enabled = false;
 		latest = await Task.Run(() => LatestCommit());
+		var rows = latest == null ? null : await Task.Run(() => OptionalRows(latest));
+		if (rows == null) {
+			Set(Amber, "Can't reach GitHub", "Retry", Check, false);
+			return;
+		}
 
 		var stamp = Path.Combine(addons, @"!ForeverKit\Installed.lua");
 		var installed = File.Exists(stamp)
@@ -114,18 +121,52 @@ class Kit : Form {
 		bool missing = installed.Success && installed.Groups[3].Value.Split(',').Any(f => !Directory.Exists(Path.Combine(addons, f)));
 		string verb = !present ? "Install" : missing ? "Repair" : "Update";
 
-		if (latest == null)
-			Set(Amber, "Can't reach GitHub", "Retry", Check, false);
-		else if (installed.Success && installed.Groups[1].Value == latest && !missing)
+		var folders = installed.Success ? installed.Groups[3].Value.Split(',') : new string[0];
+		ShowOptional(rows, folders);
+		refresh = delegate { ShowState(installed, present, missing, verb); };
+		refresh();
+	}
+
+	// Tag holds whether the kit has the addon, so a changed tick means work to do.
+	void ShowOptional(List<string[]> rows, string[] folders) {
+		var ticks = optional.ToDictionary(b => b.Text, b => b.Checked != (bool)b.Tag ? (bool?)b.Checked : null);
+		foreach (var box in optional) { Controls.Remove(box); box.Dispose(); }
+		optional.Clear();
+		int line = LogicalToDevice(26), top = LogicalToDevice(114);
+		foreach (var row in rows) {
+			bool has = folders.Contains(row[1].Split(',')[0]);
+			bool? tick;
+			ticks.TryGetValue(row[0] + " (optional)", out tick);
+			var box = new CheckBox { Text = row[0] + " (optional)", Tag = has, Checked = tick ?? has, AutoSize = true, ForeColor = Fg,
+				Location = new Point(LogicalToDevice(22), top + optional.Count * line) };
+			box.CheckedChanged += delegate { refresh(); };
+			optional.Add(box);
+			Controls.Add(box);
+		}
+		int bottom = top + optional.Count * line + LogicalToDevice(10);
+		log.Top = bottom;
+		ClientSize = new Size(ClientSize.Width, log.Visible ? log.Bottom + log.Left : bottom);
+	}
+
+	int LogicalToDevice(int pixels) {
+		return (int)Math.Round(pixels * CurrentAutoScaleDimensions.Width / 96);
+	}
+
+	void ShowState(Match installed, bool present, bool missing, string verb) {
+		poll.Stop();
+		bool changed = present && optional.Any(b => b.Checked != (bool)b.Tag);
+		if (changed && !missing && installed.Success && installed.Groups[1].Value == latest) verb = "Apply";
+		if (!changed && installed.Success && installed.Groups[1].Value == latest && !missing)
 			Set(Green, "Up to date · installed " + installed.Groups[2].Value, "Close", Close, false);
 		else if (WowRunning()) {
 			Set(Amber, "Close WoW to " + verb.ToLower(), verb, null, true);
 			poll.Start();
 		} else
-			Set(present ? Amber : Dim, !present ? "Not installed" : missing ? "Kit addons are missing" : "Update available", verb, Install, true);
+			Set(present ? Amber : Dim, !present ? "Not installed" : verb == "Apply" ? "Optional addons changed" : missing ? "Kit addons are missing" : "Update available", verb, Install, true);
 	}
 
 	async void Install() {
+		foreach (var box in optional) box.Enabled = false;
 		log.Clear();
 		log.Visible = true;
 		ClientSize = new Size(ClientSize.Width, log.Bottom + log.Left);
@@ -143,6 +184,8 @@ class Kit : Form {
 		};
 		start.EnvironmentVariables["WOW_KIT_ADDONS"] = addons;
 		start.EnvironmentVariables["WOW_KIT_SHA"] = latest;
+		var chosen = optional.Where(b => b.Checked).Select(b => b.Text.Replace(" (optional)", "")).ToArray();
+		start.EnvironmentVariables["WOW_KIT_OPTIONAL"] = chosen.Length > 0 ? string.Join(",", chosen) : "none";
 		var run = Process.Start(start);
 		DataReceivedEventHandler show = (sender, e) => {
 			if (!string.IsNullOrWhiteSpace(e.Data)) BeginInvoke((Action)(() => log.AppendText(e.Data + Environment.NewLine)));
@@ -173,6 +216,19 @@ class Kit : Form {
 			var client = Client();
 			client.Headers["Accept"] = "application/vnd.github.sha";
 			return client.DownloadString("https://api.github.com/repos/" + Repo + "/commits/main").Trim();
+		} catch (WebException) {
+			return null;
+		}
+	}
+
+	// The name and folders of each optional row in addons.tsv.
+	static List<string[]> OptionalRows(string sha) {
+		try {
+			var lines = Client().DownloadString("https://raw.githubusercontent.com/" + Repo + "/" + sha + "/addons.tsv")
+				.Split('\n').Select(l => l.TrimEnd('\r').Split('\t')).ToList();
+			int name = Array.IndexOf(lines[0], "name"), folders = Array.IndexOf(lines[0], "folders"), flag = Array.IndexOf(lines[0], "optional");
+			return lines.Skip(1).Where(l => flag >= 0 && l.Length > flag && l[flag] != "")
+				.Select(l => new[] { l[name], l[folders] }).ToList();
 		} catch (WebException) {
 			return null;
 		}
